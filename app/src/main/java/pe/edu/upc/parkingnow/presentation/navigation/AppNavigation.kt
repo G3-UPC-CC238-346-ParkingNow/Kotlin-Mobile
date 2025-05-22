@@ -6,6 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import pe.edu.upc.parkingnow.presentation.view.LoginScreen
 import pe.edu.upc.parkingnow.presentation.view.WelcomeScreen
+import pe.edu.upc.parkingnow.presentation.view.RegisterScreen
+import pe.edu.upc.parkingnow.presentation.view.ForgotPasswordScreen
+import pe.edu.upc.parkingnow.presentation.view.ChangePasswordScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -18,6 +21,15 @@ fun AppNavigation(navController: NavHostController) {
         }
         composable(Routes.Login.route) {
             LoginScreen(navController = navController)
+        }
+        composable(Routes.Register.route) {
+            RegisterScreen(navController = navController)
+        }
+        composable(Routes.ForgotPassword.route) {
+            ForgotPasswordScreen(navController = navController)
+        }
+        composable(Routes.ChangePassword.route) {
+            ChangePasswordScreen(navController = navController)
         }
     }
 }
