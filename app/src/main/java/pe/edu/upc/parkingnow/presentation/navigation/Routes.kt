@@ -6,6 +6,7 @@ object Routes {
     val Register = Screen("register")
     val ForgotPassword = Screen("forgot_password")
     val ChangePassword = Screen("change_password")
+    val Dashboard = Screen("dashboard")
 
     data class Screen(val route: String)
 }

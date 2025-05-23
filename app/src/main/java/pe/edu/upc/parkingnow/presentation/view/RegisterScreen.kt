@@ -182,7 +182,18 @@ fun RegisterScreen(navController: NavController) {
                 )
 
                 Button(
-                    onClick = { /* TODO: Acción de registro */ },
+                    onClick = {
+                        if (name.isNotBlank() &&
+                            email.isNotBlank() &&
+                            password.isNotBlank() &&
+                            confirmPassword.isNotBlank() &&
+                            plate.isNotBlank() &&
+                            dni.isNotBlank() &&
+                            password == confirmPassword
+                        ) {
+                            navController.navigate("dashboard")
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
