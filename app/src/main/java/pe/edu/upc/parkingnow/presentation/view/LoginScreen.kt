@@ -47,18 +47,38 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
         )
+        Text(
+            text = "Welcome back 👋",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF1565C0),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 100.dp)
+        )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.Top,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
+                .padding(top = 32.dp)
         ) {
+            // Text(
+            //     text = "Welcome back 👋",
+            //     fontSize = 28.sp,
+            //     fontWeight = FontWeight.SemiBold,
+            //     color = Color(0xFF1565C0),
+            //     modifier = Modifier
+            //         .align(Alignment.CenterHorizontally)
+            //         .padding(top = 0.dp, bottom = 24.dp)
+            // )
             Text(
                 text = "Login to\nyour account",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0D0D0D)
+                color = Color(0xFF0D0D0D),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(16.dp))
 
