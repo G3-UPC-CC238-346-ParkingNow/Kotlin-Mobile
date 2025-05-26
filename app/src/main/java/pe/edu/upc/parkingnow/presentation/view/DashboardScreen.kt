@@ -40,6 +40,8 @@ import org.osmdroid.views.MapView
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -170,75 +172,77 @@ fun DashboardScreen(navController: NavController, username: String) {
                     .background(Color(0xFFF8FBFF))
                     .padding(padding)
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 DashboardCard("Lugares marcados como favoritos")
                 DashboardCard("Ofertas de estacionamientos")
+
+                Spacer(modifier = Modifier.height(24.dp)) // Add space between cards and map
+
                 if (hasLocationPermission) {
-                    AndroidView(
-                        factory = { ctx ->
-                            val appContext = ctx.applicationContext
-                            val map = MapView(appContext)
-                            map.setTileSource(TileSourceFactory.MAPNIK)
-                            map.setMultiTouchControls(true)
-                            map.setUseDataConnection(true) // Asegurar que use red
-
-                            // Limitar el área visible al rango aproximado de Perú
-                            // map.setScrollableAreaLimitLatitude(-0.0, -18.5, 0)
-                            // map.setScrollableAreaLimitLongitude(-69.0, -81.5, 0)
-
-                            // Listener para advertir si el usuario se aleja más allá del límite
-                            map.addMapListener(object : org.osmdroid.events.MapListener {
-                                override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean = false
-                                override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean {
-                                    if (map.zoomLevelDouble < 4.0) {
-                                        Toast.makeText(ctx, "Límite del mapa alcanzado", Toast.LENGTH_SHORT).show()
-                                    }
-                                    return false
-                                }
-                            })
-
-                            // Mostrar todo Perú por defecto
-                            val peruCenter = GeoPoint(-9.19, -75.0152)
-                            map.controller.setZoom(5.5)
-                            map.controller.setCenter(peruCenter)
-
-                            // Obtener ubicación en tiempo real y centrar el mapa
-                            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx)
-                            val locationRequest = LocationRequest.create().apply {
-                                interval = 10000
-                                fastestInterval = 5000
-                                priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
-                                numUpdates = 1
-                            }
-
-                            val locationCallback = object : LocationCallback() {
-                                override fun onLocationResult(result: LocationResult) {
-                                    val location = result.lastLocation
-                                    if (location != null) {
-                                        val userLocation = GeoPoint(location.latitude, location.longitude)
-                                        val marker = org.osmdroid.views.overlay.Marker(map)
-                                        marker.position = userLocation
-                                        marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
-                                        marker.title = "Estás aquí"
-                                        map.overlays.add(marker)
-                                        map.controller.setZoom(17.0)
-                                        map.controller.setCenter(userLocation)
-                                        Toast.makeText(ctx, "Tu ubicación actual ha sido detectada", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            }
-
-                            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, ctx.mainLooper)
-
-                            map
-                        },
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp)
-                    )
+                            .height(180.dp)
+                            .padding(bottom = 16.dp) // Add bottom padding to avoid touching screen edge
+                    ) {
+                        AndroidView(
+                            factory = { ctx ->
+                                val appContext = ctx.applicationContext
+                                val map = MapView(appContext)
+                                map.setTileSource(TileSourceFactory.MAPNIK)
+                                map.setMultiTouchControls(true)
+                                map.setUseDataConnection(true)
+
+                                map.addMapListener(object : org.osmdroid.events.MapListener {
+                                    override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean = false
+                                    override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean {
+                                        if (map.zoomLevelDouble < 4.0) {
+                                            Toast.makeText(ctx, "Límite del mapa alcanzado", Toast.LENGTH_SHORT).show()
+                                        }
+                                        return false
+                                    }
+                                })
+
+                                val peruCenter = GeoPoint(-9.19, -75.0152)
+                                map.controller.setZoom(5.5)
+                                map.controller.setCenter(peruCenter)
+
+                                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx)
+                                val locationRequest = LocationRequest.create().apply {
+                                    interval = 10000
+                                    fastestInterval = 5000
+                                    priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
+                                    numUpdates = 1
+                                }
+
+                                val locationCallback = object : LocationCallback() {
+                                    override fun onLocationResult(result: LocationResult) {
+                                        val location = result.lastLocation
+                                        if (location != null) {
+                                            val userLocation = GeoPoint(location.latitude, location.longitude)
+                                            val marker = org.osmdroid.views.overlay.Marker(map)
+                                            marker.position = userLocation
+                                            marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
+                                            marker.title = "Estás aquí"
+                                            map.overlays.add(marker)
+                                            map.controller.setZoom(17.0)
+                                            map.controller.setCenter(userLocation)
+                                            Toast.makeText(ctx, "Tu ubicación actual ha sido detectada", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+
+                                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, ctx.mainLooper)
+
+                                map
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }
