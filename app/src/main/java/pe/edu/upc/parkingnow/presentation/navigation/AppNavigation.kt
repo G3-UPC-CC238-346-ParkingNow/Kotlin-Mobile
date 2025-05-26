@@ -10,6 +10,10 @@ import pe.edu.upc.parkingnow.presentation.view.RegisterScreen
 import pe.edu.upc.parkingnow.presentation.view.ForgotPasswordScreen
 import pe.edu.upc.parkingnow.presentation.view.ChangePasswordScreen
 import pe.edu.upc.parkingnow.presentation.view.DashboardScreen
+import pe.edu.upc.parkingnow.presentation.view.BookingsScreen
+import pe.edu.upc.parkingnow.presentation.view.TicketScreen
+import pe.edu.upc.parkingnow.presentation.view.SuccessScreen
+import pe.edu.upc.parkingnow.presentation.view.PaymentScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -34,6 +38,18 @@ fun AppNavigation(navController: NavHostController) {
         }
         composable(Routes.Dashboard.route) {
             DashboardScreen(navController = navController)
+        }
+        composable("bookings") {
+            BookingsScreen(navController = navController)
+        }
+        composable("ticket") {
+            TicketScreen(navController = navController)
+        }
+        composable("success") {
+            SuccessScreen(navController = navController)
+        }
+        composable("payment") {
+            PaymentScreen(navController = navController)
         }
     }
 }

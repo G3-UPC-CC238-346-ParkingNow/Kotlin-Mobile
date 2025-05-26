@@ -49,8 +49,10 @@ dependencies {
     implementation(libs.androidx.ui)// Jetpack Compose Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation(libs.androidx.ui.graphics)
+    implementation("com.airbnb.android:lottie-compose:6.0.0")
     implementation("org.osmdroid:osmdroid-android:6.1.16")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.zxing:core:3.5.1")
     implementation(libs.androidx.ui.tooling.preview)
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
     implementation(libs.androidx.material3)

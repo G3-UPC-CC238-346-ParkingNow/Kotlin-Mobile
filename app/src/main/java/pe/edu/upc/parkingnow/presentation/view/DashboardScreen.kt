@@ -102,12 +102,17 @@ fun DashboardScreen(navController: NavController) {
                     "Inicio", "Reservas", "Soporte", "Seguimiento", "Configuración", "Notificación"
                 )
 
-                menuItems.forEach {
+                menuItems.forEach { item ->
                     Text(
-                        text = it,
+                        text = item,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { scope.launch { drawerState.close() } }
+                            .clickable {
+                                scope.launch { drawerState.close() }
+                                if (item == "Reservas") {
+                                    navController.navigate("bookings")
+                                }
+                            }
                             .padding(16.dp),
                         fontSize = 14.sp
                     )
