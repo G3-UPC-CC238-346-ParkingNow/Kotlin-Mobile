@@ -109,8 +109,12 @@ fun DashboardScreen(navController: NavController) {
                             .fillMaxWidth()
                             .clickable {
                                 scope.launch { drawerState.close() }
-                                if (item == "Reservas") {
-                                    navController.navigate("bookings")
+                                when (item) {
+                                    "Reservas" -> navController.navigate("bookings")
+                                    "Soporte" -> navController.navigate("support")
+                                    "Seguimiento" -> navController.navigate("tracking")
+                                    "Configuración" -> navController.navigate("settings")
+                                    "Notificación" -> navController.navigate("notifications")
                                 }
                             }
                             .padding(16.dp),
@@ -125,7 +129,10 @@ fun DashboardScreen(navController: NavController) {
                     color = Color.Red,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { /* handle logout */ }
+                        .clickable {
+                            Toast.makeText(context, "Se cerró la sesión exitosamente", Toast.LENGTH_SHORT).show()
+                            navController.navigate("login")
+                        }
                         .padding(16.dp)
                 )
             }
