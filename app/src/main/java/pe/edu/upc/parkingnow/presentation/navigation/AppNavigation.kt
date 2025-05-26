@@ -40,8 +40,9 @@ fun AppNavigation(navController: NavHostController) {
         composable(Routes.ChangePassword.route) {
             ChangePasswordScreen(navController = navController)
         }
-        composable(Routes.Dashboard.route) {
-            DashboardScreen(navController = navController)
+        composable("dashboard/{username}") { backStackEntry ->
+            val username = backStackEntry.arguments?.getString("username") ?: "Usuario"
+            DashboardScreen(navController = navController, username = username)
         }
         composable("bookings") {
             BookingsScreen(navController = navController)

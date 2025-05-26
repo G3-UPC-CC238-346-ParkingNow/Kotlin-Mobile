@@ -43,7 +43,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(navController: NavController) {
+fun DashboardScreen(navController: NavController, username: String) {
     val context = LocalContext.current
     Configuration.getInstance().load(context.applicationContext, context.getSharedPreferences("osmdroid", 0))
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -92,8 +92,8 @@ fun DashboardScreen(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("John Smith", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text("Jakarta, Indonesia", fontSize = 12.sp, color = Color.Gray)
+                        Text(username, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text("Lima, Perú", fontSize = 12.sp, color = Color.Gray)
                     }
                 }
                 HorizontalDivider()
