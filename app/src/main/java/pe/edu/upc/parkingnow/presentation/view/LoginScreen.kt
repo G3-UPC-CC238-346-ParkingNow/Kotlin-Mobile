@@ -80,9 +80,9 @@ fun LoginScreen(navController: NavController) {
                 color = Color(0xFF0D0D0D),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -100,6 +100,8 @@ fun LoginScreen(navController: NavController) {
                         unfocusedTextColor = Color.Black
                     )
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = password,
@@ -125,6 +127,8 @@ fun LoginScreen(navController: NavController) {
                     )
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
                 TextButton(
                     onClick = {
                         navController.navigate(Routes.ForgotPassword.route)
@@ -139,6 +143,8 @@ fun LoginScreen(navController: NavController) {
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
             TextButton(onClick = {
                 navController.navigate(Routes.Register.route)
             }) {
@@ -148,6 +154,8 @@ fun LoginScreen(navController: NavController) {
                     color = Color.DarkGray
                 )
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             Button(
                 onClick = { /* TODO: Login action */ },

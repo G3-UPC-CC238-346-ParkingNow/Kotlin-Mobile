@@ -42,6 +42,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,44 +100,41 @@ fun DashboardScreen(navController: NavController, username: String) {
                     }
                 }
                 HorizontalDivider()
+                Spacer(modifier = Modifier.height(40.dp))
 
-                val menuItems = listOf(
-                    "Inicio", "Reservas", "Soporte", "Seguimiento", "Configuración", "Notificación"
-                )
-
-                menuItems.forEach { item ->
-                    Text(
-                        text = item,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                scope.launch { drawerState.close() }
-                                when (item) {
-                                    "Reservas" -> navController.navigate("bookings")
-                                    "Soporte" -> navController.navigate("support")
-                                    "Seguimiento" -> navController.navigate("tracking")
-                                    "Configuración" -> navController.navigate("settings")
-                                    "Notificación" -> navController.navigate("notifications")
-                                }
-                            }
-                            .padding(16.dp),
-                        fontSize = 14.sp
-                    )
+                DrawerMenuItem("Inicio", Icons.Default.Home) { /* No navigation */ }
+                Spacer(modifier = Modifier.height(12.dp))
+                DrawerMenuItem("Reservas", Icons.Default.Book) {
+                    scope.launch { drawerState.close() }
+                    navController.navigate("bookings")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                DrawerMenuItem("Soporte", Icons.Default.Support) {
+                    scope.launch { drawerState.close() }
+                    navController.navigate("support")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                DrawerMenuItem("Seguimiento", Icons.Default.LocationOn) {
+                    scope.launch { drawerState.close() }
+                    navController.navigate("tracking")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                DrawerMenuItem("Configuración", Icons.Default.Settings) {
+                    scope.launch { drawerState.close() }
+                    navController.navigate("settings")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                DrawerMenuItem("Notificación", Icons.Default.Notifications) {
+                    scope.launch { drawerState.close() }
+                    navController.navigate("notifications")
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(40.dp))
 
-                Text(
-                    text = "Logout",
-                    color = Color.Red,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            Toast.makeText(context, "Se cerró la sesión exitosamente", Toast.LENGTH_SHORT).show()
-                            navController.navigate("login")
-                        }
-                        .padding(16.dp)
-                )
+                DrawerMenuItem("Logout", Icons.Default.ExitToApp, onClick = {
+                    Toast.makeText(context, "Se cerró la sesión exitosamente", Toast.LENGTH_SHORT).show()
+                    navController.navigate("login")
+                })
             }
         }
     ) {
@@ -263,5 +261,28 @@ fun DashboardCard(text: String) {
         Box(contentAlignment = Alignment.Center) {
             Text(text = text, fontSize = 16.sp, fontWeight = FontWeight.Medium)
         }
+    }
+}
+
+
+@Composable
+fun DrawerMenuItem(label: String, icon: ImageVector, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 20.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = label,
+            fontSize = 14.sp
+        )
     }
 }
