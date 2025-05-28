@@ -58,7 +58,7 @@ fun ForgotPasswordScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
         IconButton(
-            onClick = { navController.popBackStack() },
+            onClick = { navController.navigate(pe.edu.upc.parkingnow.presentation.navigation.Routes.Login.route) },
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(top = 32.dp, start = 16.dp)

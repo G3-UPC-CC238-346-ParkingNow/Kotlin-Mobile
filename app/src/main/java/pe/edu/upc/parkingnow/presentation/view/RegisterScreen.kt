@@ -70,22 +70,27 @@ fun RegisterScreen(navController: NavController) {
                 ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start,
-                    modifier = Modifier.fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
                 ) {
-                    IconButton(onClick = { navController.navigate("login") }) {
+                    IconButton(
+                        onClick = { navController.navigate("login") },
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
+
                     Text(
                         text = "Register Conductor",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0D0D0D)
+                        color = Color(0xFF0D0D0D),
+                        modifier = Modifier.align(Alignment.Center)
                     )
                 }
 

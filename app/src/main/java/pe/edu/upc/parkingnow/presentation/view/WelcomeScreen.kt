@@ -32,18 +32,18 @@ fun WelcomeScreen(navController: NavController) {
     val scale = remember { Animatable(1f) }
 
     LaunchedEffect(Unit) {
-        delay(7000)
+        delay(4000)
         showLogin = true
         launch {
             alpha.animateTo(
                 targetValue = 0f,
-                animationSpec = tween(durationMillis = 2000)
+                animationSpec = tween(durationMillis = 4000)
             )
         }
         launch {
             scale.animateTo(
                 targetValue = 1.2f,
-                animationSpec = tween(durationMillis = 2000)
+                animationSpec = tween(durationMillis = 4000)
             )
         }
     }
