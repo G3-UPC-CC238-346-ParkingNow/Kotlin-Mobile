@@ -3,6 +3,7 @@ package pe.edu.upc.parkingnow.presentation.view
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -15,69 +16,132 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ArrowBack
+import pe.edu.upc.parkingnow.R
 
 @Composable
 fun NotificationsScreen(navController: NavController) {
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F9FF))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Notificaciones",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.login_background),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(40.dp))
 
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "Recibos",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Button(
-                onClick = {
-                    Toast.makeText(context, "Mostrando recibos", Toast.LENGTH_SHORT).show()
-                },
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    .padding(bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(" ", color = Color.Gray)
+                IconButton(onClick = { navController.navigate("dashboard/Usuario") }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Regresar",
+                        tint = Color.Black
+                    )
+                }
             }
-        }
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Notificaciones de lugares favoritos",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 8.dp)
+                text = "Notificaciones",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
             )
 
-            Button(
-                onClick = {
-                    Toast.makeText(context, "Mostrando notificaciones favoritas", Toast.LENGTH_SHORT).show()
-                },
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Recibos",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Button(
+                    onClick = {
+                        Toast.makeText(context, "Mostrando recibos", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                ) {
+                    Icon(Icons.Default.Receipt, contentDescription = null, tint = Color.Gray)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ver recibos", color = Color.Gray)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Notificaciones de lugares favoritos",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Button(
+                    onClick = {
+                        Toast.makeText(context, "Mostrando notificaciones favoritas", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                ) {
+                    Icon(Icons.Default.Place, contentDescription = null, tint = Color.Gray)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ver favoritos", color = Color.Gray)
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    .background(Color.White)
+                    .height(100.dp)
+                    .padding(horizontal = 32.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(" ", color = Color.Gray)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Home, contentDescription = "Inicio", tint = Color(0xFF1D4ED8), modifier = Modifier.size(28.dp))
+                    Text("Inicio", fontSize = 12.sp, color = Color(0xFF1D4ED8))
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = Color.Gray, modifier = Modifier.size(28.dp))
+                    Text("Ajustes", fontSize = 12.sp, color = Color.Gray)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Person, contentDescription = "Perfil", tint = Color.Gray, modifier = Modifier.size(28.dp))
+                    Text("Perfil", fontSize = 12.sp, color = Color.Gray)
+                }
             }
         }
     }

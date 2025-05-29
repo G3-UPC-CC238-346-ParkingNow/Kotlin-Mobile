@@ -225,7 +225,10 @@ fun DashboardScreen(navController: NavController, username: String) {
                                             val marker = org.osmdroid.views.overlay.Marker(map)
                                             marker.position = userLocation
                                             marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
-                                            marker.title = "Estás aquí"
+                                            marker.setOnMarkerClickListener { _, _ ->
+                                                Toast.makeText(ctx, "Estás aquí", Toast.LENGTH_SHORT).show()
+                                                true
+                                            }
                                             map.overlays.add(marker)
                                             map.controller.setZoom(17.0)
                                             map.controller.setCenter(userLocation)
