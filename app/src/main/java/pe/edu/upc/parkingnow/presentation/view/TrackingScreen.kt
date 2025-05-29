@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import pe.edu.upc.parkingnow.R
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
 @Composable
 fun TrackingScreen(navController: NavController) {
@@ -210,7 +211,7 @@ fun TrackingScreen(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.weight(1f)
                     ) {
-                        IconButton(onClick = { navController.navigate("dashboard/Usuario") }) {
+                        IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
                             Icon(Icons.Default.Home, contentDescription = "Inicio", tint = activeColor)
                         }
                         Text("Inicio", fontSize = 12.sp, color = activeColor)
@@ -219,7 +220,7 @@ fun TrackingScreen(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.weight(1f)
                     ) {
-                        IconButton(onClick = { /* Ajustes aún no implementado */ }) {
+                        IconButton(onClick = { navController.navigate(Routes.Settings.route) }) {
                             Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = inactiveColor)
                         }
                         Text("Ajustes", fontSize = 12.sp, color = inactiveColor)
@@ -228,7 +229,7 @@ fun TrackingScreen(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.weight(1f)
                     ) {
-                        IconButton(onClick = { /* Perfil aún no implementado */ }) {
+                        IconButton(onClick = { navController.navigate(Routes.Login.route) }) {
                             Icon(Icons.Default.Person, contentDescription = "Perfil", tint = inactiveColor)
                         }
                         Text("Perfil", fontSize = 12.sp, color = inactiveColor)

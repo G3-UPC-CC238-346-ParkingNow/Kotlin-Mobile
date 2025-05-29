@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavController
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
 import pe.edu.upc.parkingnow.R
 
 @Composable
@@ -53,7 +54,7 @@ fun BookingsScreen(navController: NavController) {
                     .padding(bottom = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { navController.navigate("dashboard/Usuario") }) {
+                IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
@@ -196,7 +197,7 @@ fun BookingsScreen(navController: NavController) {
             ) {
                 NavigationBarItem(
                     selected = false,
-                    onClick = { navController.navigate("dashboard/Usuario") },
+                    onClick = { navController.navigate(Routes.Dashboard.route) },
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.Home,
@@ -220,7 +221,7 @@ fun BookingsScreen(navController: NavController) {
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick = { navController.navigate("dashboard/Usuario") },
+                    onClick = { navController.navigate(Routes.Dashboard.route) },
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.Person,

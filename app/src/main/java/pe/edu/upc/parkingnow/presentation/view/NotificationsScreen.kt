@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ArrowBack
 import pe.edu.upc.parkingnow.R
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
 @Composable
 fun NotificationsScreen(navController: NavController) {
@@ -53,7 +54,7 @@ fun NotificationsScreen(navController: NavController) {
                     .padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { navController.navigate("dashboard/Usuario") }) {
+                IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Regresar",

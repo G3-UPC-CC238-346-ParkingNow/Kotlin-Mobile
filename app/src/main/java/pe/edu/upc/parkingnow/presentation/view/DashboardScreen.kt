@@ -1,9 +1,12 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.Geocoder
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,7 +18,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.* // ✅ Esto ya incluye Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,10 +50,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import java.util.Locale
+
+import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(navController: NavController, username: String) {
+fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) {
+    // Use UserViewModel to persist username during the session
+    val currentUsername by userViewModel.username.collectAsState()
     val context = LocalContext.current
     Configuration.getInstance().load(context.applicationContext, context.getSharedPreferences("osmdroid", 0))
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -63,6 +73,10 @@ fun DashboardScreen(navController: NavController, username: String) {
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
+    // Estados separados para distrito, ciudad y país
+    val district = remember { mutableStateOf("") }
+    val city = remember { mutableStateOf("") }
+    val country = remember { mutableStateOf("") }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -88,54 +102,71 @@ fun DashboardScreen(navController: NavController, username: String) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = "User Avatar",
+                    Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                    )
+                            .background(Color(0xFF1D4ED8)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = currentUsername.take(1).uppercase(),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = Color.White
+                        )
+                    }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(username, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text("Lima, Perú", fontSize = 12.sp, color = Color.Gray)
+                        Text(
+                            text = currentUsername,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        AnimatedContent(
+                            targetState = "${district.value}, ${city.value}, ${country.value}".trim(',', ' ')
+                        ) { locationText ->
+                            Text(locationText, fontSize = 12.sp, color = Color.Gray)
+                        }
                     }
                 }
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(40.dp))
 
-                DrawerMenuItem("Inicio", Icons.Default.Home) { /* No navigation */ }
-                Spacer(modifier = Modifier.height(12.dp))
-                DrawerMenuItem("Reservas", Icons.Default.Book) {
+                DrawerMenuItem("Inicio", Icons.Outlined.Home) {
                     scope.launch { drawerState.close() }
-                    navController.navigate("bookings")
+                    navController.navigate(Routes.Dashboard.route)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                DrawerMenuItem("Soporte", Icons.Default.Support) {
+                DrawerMenuItem("Reservas", Icons.Outlined.CalendarToday) {
                     scope.launch { drawerState.close() }
-                    navController.navigate("support")
+                    navController.navigate(Routes.Bookings.route)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                DrawerMenuItem("Seguimiento", Icons.Default.LocationOn) {
+                DrawerMenuItem("Soporte", Icons.Outlined.SupportAgent) {
                     scope.launch { drawerState.close() }
-                    navController.navigate("tracking")
+                    navController.navigate(Routes.Support.route)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                DrawerMenuItem("Configuración", Icons.Default.Settings) {
+                DrawerMenuItem("Seguimiento", Icons.Outlined.Place) {
                     scope.launch { drawerState.close() }
-                    navController.navigate("settings")
+                    navController.navigate(Routes.Tracking.route)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                DrawerMenuItem("Notificación", Icons.Default.Notifications) {
+                DrawerMenuItem("Configuración", Icons.Outlined.Settings) {
                     scope.launch { drawerState.close() }
-                    navController.navigate("notifications")
+                    navController.navigate(Routes.Settings.route)
                 }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                DrawerMenuItem("Logout", Icons.Default.ExitToApp, onClick = {
+                Spacer(modifier = Modifier.height(12.dp))
+                DrawerMenuItem("Notificación", Icons.Outlined.Notifications) {
+                    scope.launch { drawerState.close() }
+                    navController.navigate(Routes.Notifications.route)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                DrawerMenuItem("Logout", Icons.Outlined.Logout, onClick = {
                     Toast.makeText(context, "Se cerró la sesión exitosamente", Toast.LENGTH_SHORT).show()
-                    navController.navigate("login")
+                    navController.navigate(Routes.Login.route)
                 })
             }
         }
@@ -149,7 +180,12 @@ fun DashboardScreen(navController: NavController, username: String) {
                         navigationIconContentColor = Color.Black,
                         actionIconContentColor = Color.Black
                     ),
-                    title = { Text("Dashboard Conductor") },
+                    title = {
+                        Column(modifier = Modifier.padding(top = 8.dp)) {
+                            Text("Dashboard Conductor", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            // Username removed as requested
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
@@ -157,11 +193,12 @@ fun DashboardScreen(navController: NavController, username: String) {
                     },
                     actions = {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            imageVector = Icons.Default.Person,
                             contentDescription = "User",
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
+                                .padding(top = 12.dp)
                         )
                     }
                 )
@@ -174,20 +211,50 @@ fun DashboardScreen(navController: NavController, username: String) {
                     .fillMaxSize()
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(12.dp))
                 DashboardCard("Lugares marcados como favoritos")
                 DashboardCard("Ofertas de estacionamientos")
 
-                Spacer(modifier = Modifier.height(48.dp)) // Más espacio antes del mapa
+                Spacer(modifier = Modifier.height(16.dp)) // Más espacio antes del mapa (reducido)
 
                 if (hasLocationPermission) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Mapa en tiempo real",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1E293B)
+                        )
+
+                        AnimatedContent(
+                            targetState = district.value,
+                            label = ""
+                        ) {
+                            Text(
+                                text = it,
+                                fontSize = 14.sp,
+                                color = Color(0xFF1D4ED8)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(250.dp) // Altura aumentada para mejor visualización
-                            .padding(horizontal = 8.dp, vertical = 16.dp) // Padding mejorado
+                            .height(250.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White)
+                            .padding(8.dp)
                     ) {
                         AndroidView(
                             factory = { ctx ->
@@ -239,6 +306,14 @@ fun DashboardScreen(navController: NavController, username: String) {
                                             // Centrar el mapa directamente en la ubicación del usuario
                                             map.controller.setZoom(18.0)
                                             map.controller.setCenter(userLocation)
+
+                                            val geocoder = Geocoder(ctx, Locale.getDefault())
+                                            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                                            if (!addresses.isNullOrEmpty()) {
+                                                district.value = addresses[0].subLocality ?: ""
+                                                city.value = addresses[0].locality ?: addresses[0].subAdminArea ?: ""
+                                                country.value = addresses[0].countryName ?: ""
+                                            }
                                         }
                                     }
                                 }
@@ -263,14 +338,14 @@ fun DashboardCard(text: String) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = Color.White,
-        shadowElevation = 4.dp,
+        shadowElevation = 6.dp,
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
             .clickable { /* onClick */ }
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(text = text, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text(text = text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1E293B))
         }
     }
 }
@@ -288,12 +363,14 @@ fun DrawerMenuItem(label: String, icon: ImageVector, onClick: () -> Unit) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(20.dp),
+            tint = Color(0xFF1D4ED8)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = label,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            color = Color(0xFF1D4ED8)
         )
     }
 }

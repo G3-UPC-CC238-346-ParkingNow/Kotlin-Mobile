@@ -1,5 +1,7 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -608,7 +610,7 @@ fun PaymentScreen(navController: NavController) {
                             Text("ID: $ticketCode", fontSize = 12.sp, color = Color.Gray)
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
-                                onClick = { navController.navigate("success") },
+                                onClick = { navController.navigate(Routes.Dashboard.route) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(46.dp),

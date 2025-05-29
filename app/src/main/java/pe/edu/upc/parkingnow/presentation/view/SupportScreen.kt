@@ -1,5 +1,7 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
+
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,7 +50,7 @@ fun SupportScreen(navController: NavController) {
         )
 
         IconButton(
-            onClick = { navController.navigate("dashboard/Usuario") },
+            onClick = { navController.navigate(Routes.Dashboard.route) },
             modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.TopStart)
@@ -60,7 +62,10 @@ fun SupportScreen(navController: NavController) {
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp).align(Alignment.TopStart).padding(start = 16.dp))
+        Spacer(modifier = Modifier
+            .height(16.dp)
+            .align(Alignment.TopStart)
+            .padding(start = 16.dp))
 
         Column(
             modifier = Modifier
@@ -179,7 +184,7 @@ fun SupportScreen(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.weight(1f)
             ) {
-                IconButton(onClick = { navController.navigate("dashboard/Usuario") }) {
+                IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
                     Icon(Icons.Default.Home, contentDescription = "Inicio", tint = activeColor)
                 }
                 Text("Inicio", fontSize = 12.sp, color = activeColor)
@@ -188,8 +193,12 @@ fun SupportScreen(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.weight(1f)
             ) {
-                IconButton(onClick = { /* Ajustes aún no implementado */ }) {
-                    Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = inactiveColor)
+                IconButton(onClick = { navController.navigate(Routes.Settings.route) }) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Ajustes",
+                        tint = inactiveColor
+                    )
                 }
                 Text("Ajustes", fontSize = 12.sp, color = inactiveColor)
             }
@@ -197,7 +206,7 @@ fun SupportScreen(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.weight(1f)
             ) {
-                IconButton(onClick = { /* Perfil aún no implementado */ }) {
+                IconButton(onClick = { navController.navigate(Routes.Login.route) }) {
                     Icon(Icons.Default.Person, contentDescription = "Perfil", tint = inactiveColor)
                 }
                 Text("Perfil", fontSize = 12.sp, color = inactiveColor)

@@ -1,4 +1,5 @@
-package pe.edu.upc.parkingnow.presentation.view
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
+
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,7 +22,7 @@ import kotlinx.coroutines.launch
 fun SuccessScreen(navController: NavController) {
     LaunchedEffect(true) {
         delay(3000)
-        navController.navigate("bookings")
+        navController.navigate(Routes.Dashboard.route)
     }
 
     Box(

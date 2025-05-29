@@ -1,5 +1,7 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.navigation.Routes
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
@@ -138,7 +140,7 @@ fun TicketScreen(navController: NavController) {
 
         Button(
             onClick = {
-                navController.navigate("payment")
+                navController.navigate(Routes.Payment.route)
             },
             modifier = Modifier
                 .fillMaxWidth()

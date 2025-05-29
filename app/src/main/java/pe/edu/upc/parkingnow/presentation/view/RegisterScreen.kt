@@ -23,6 +23,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
 import pe.edu.upc.parkingnow.R
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -30,7 +32,7 @@ import androidx.compose.ui.focus.FocusDirection
 
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -234,7 +236,8 @@ fun RegisterScreen(navController: NavController) {
                             dni.isNotBlank() &&
                             password == confirmPassword
                         ) {
-                            navController.navigate("dashboard/${name}")
+                            userViewModel.setUsername(name)
+                            navController.navigate("dashboard")
                         }
                     },
                     modifier = Modifier
