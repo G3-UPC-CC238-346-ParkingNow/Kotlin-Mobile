@@ -43,6 +43,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,37 +180,39 @@ fun DashboardScreen(navController: NavController, username: String) {
                 DashboardCard("Lugares marcados como favoritos")
                 DashboardCard("Ofertas de estacionamientos")
 
-                Spacer(modifier = Modifier.height(24.dp)) // Add space between cards and map
+                Spacer(modifier = Modifier.height(48.dp)) // Más espacio antes del mapa
 
                 if (hasLocationPermission) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp)
-                            .padding(bottom = 16.dp) // Add bottom padding to avoid touching screen edge
+                            .height(250.dp) // Altura aumentada para mejor visualización
+                            .padding(horizontal = 8.dp, vertical = 16.dp) // Padding mejorado
                     ) {
                         AndroidView(
                             factory = { ctx ->
                                 val appContext = ctx.applicationContext
                                 val map = MapView(appContext)
+                                // 1. Set tile source and controls before changing zoom/center
                                 map.setTileSource(TileSourceFactory.MAPNIK)
                                 map.setMultiTouchControls(true)
                                 map.setUseDataConnection(true)
 
-                                map.addMapListener(object : org.osmdroid.events.MapListener {
-                                    override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean = false
-                                    override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean {
-                                        if (map.zoomLevelDouble < 4.0) {
-                                            Toast.makeText(ctx, "Límite del mapa alcanzado", Toast.LENGTH_SHORT).show()
-                                        }
-                                        return false
-                                    }
-                                })
+                                // Mejoras de configuración de mapa
+                                map.setZoomRounding(true)
+                                map.minZoomLevel = 5.0
+                                map.maxZoomLevel = 19.0
+                                map.isTilesScaledToDpi = false
+                                map.setScrollableAreaLimitDouble(null)
+                                map.isHorizontalMapRepetitionEnabled = false
+                                map.isVerticalMapRepetitionEnabled = false
 
+                                // 1. Set default center and zoom to Perú before location
                                 val peruCenter = GeoPoint(-9.19, -75.0152)
-                                map.controller.setZoom(5.5)
+                                map.controller.setZoom(6.5)
                                 map.controller.setCenter(peruCenter)
 
+                                // 2. User location
                                 val fusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx)
                                 val locationRequest = LocationRequest.create().apply {
                                     interval = 10000
@@ -222,17 +226,19 @@ fun DashboardScreen(navController: NavController, username: String) {
                                         val location = result.lastLocation
                                         if (location != null) {
                                             val userLocation = GeoPoint(location.latitude, location.longitude)
-                                            val marker = org.osmdroid.views.overlay.Marker(map)
-                                            marker.position = userLocation
-                                            marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
-                                            marker.setOnMarkerClickListener { _, _ ->
-                                                Toast.makeText(ctx, "Estás aquí", Toast.LENGTH_SHORT).show()
-                                                true
-                                            }
-                                            map.overlays.add(marker)
-                                            map.controller.setZoom(17.0)
+
+                                            map.overlays.clear()
+
+                                            val overlay = MyLocationNewOverlay(GpsMyLocationProvider(ctx), map)
+                                            overlay.enableMyLocation()
+                                            overlay.isDrawAccuracyEnabled = true
+                                            overlay.enableFollowLocation()
+
+                                            map.overlays.add(overlay)
+
+                                            // Centrar el mapa directamente en la ubicación del usuario
+                                            map.controller.setZoom(18.0)
                                             map.controller.setCenter(userLocation)
-                                            Toast.makeText(ctx, "Tu ubicación actual ha sido detectada", Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 }
@@ -245,6 +251,8 @@ fun DashboardScreen(navController: NavController, username: String) {
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(32.dp)) // Espacio final para separar del borde inferior
             }
         }
     }
