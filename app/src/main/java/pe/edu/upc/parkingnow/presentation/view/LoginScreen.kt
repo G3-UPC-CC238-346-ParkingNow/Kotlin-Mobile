@@ -172,5 +172,13 @@ fun LoginScreen(navController: NavController) {
                 Text("Login", fontSize = 16.sp)
             }
         }
+        Text(
+            text = "© 2025 ParkingNow. All rights reserved.",
+            color = Color.Gray,
+            fontSize = 12.sp,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+        )
     }
 }
