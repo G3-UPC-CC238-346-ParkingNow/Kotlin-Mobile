@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
@@ -30,6 +32,8 @@ import pe.edu.upc.parkingnow.R
 
 @Composable
 fun BookingsScreen(navController: NavController) {
+    val selectedItem = remember { mutableStateOf("home") }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -48,11 +52,13 @@ fun BookingsScreen(navController: NavController) {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(48.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
                     Icon(
@@ -61,33 +67,23 @@ fun BookingsScreen(navController: NavController) {
                         tint = Color.Black
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+
                 Text(
                     text = "Reservas",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
+
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "User Icon",
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(Color.White, CircleShape)
+                        .padding(6.dp)
+                )
             }
-
-            // Text(
-            //     text = "Reservas",
-            //     fontSize = 22.sp,
-            //     fontWeight = FontWeight.Bold,
-            //     modifier = Modifier.padding(bottom = 12.dp)
-            // )
-
-            // Avatar de usuario redondo reemplazado por ícono de persona
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "User Icon",
-                tint = Color.Gray,
-                modifier = Modifier
-                    .size(64.dp)
-                    .background(Color.White, CircleShape)
-                    .padding(12.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -112,7 +108,7 @@ fun BookingsScreen(navController: NavController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -151,6 +147,25 @@ fun BookingsScreen(navController: NavController) {
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = Color(0xFF1D4ED8)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Estacionamiento Real Plaza Salaverry",
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp
+                            )
+                        }
+                    }
                 }
             }
 
@@ -161,11 +176,33 @@ fun BookingsScreen(navController: NavController) {
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Lugares guardados por el usuario", color = Color.Gray)
+                    Text(
+                        text = "Lugares guardados por el usuario",
+                        color = Color.Black,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = Color(0xFFFFC107)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Estacionamiento Kennedy Park - Miraflores",
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = {
@@ -196,39 +233,66 @@ fun BookingsScreen(navController: NavController) {
                 tonalElevation = 0.dp
             ) {
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Routes.Dashboard.route) },
+                    selected = selectedItem.value == "home",
+                    onClick = {
+                        selectedItem.value = "home"
+                        navController.navigate(Routes.Dashboard.route)
+                    },
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.Home,
-                            contentDescription = "Inicio"
+                            contentDescription = "Inicio",
+                            tint = if (selectedItem.value == "home") Color(0xFF1D4ED8) else Color.Gray
                         )
                     },
-                    label = { Text("Inicio") },
+                    label = {
+                        Text(
+                            "Inicio",
+                            color = if (selectedItem.value == "home") Color(0xFF1D4ED8) else Color.Gray
+                        )
+                    },
                     colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
                 )
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate("settings") },
+                    selected = selectedItem.value == "settings",
+                    onClick = {
+                        selectedItem.value = "settings"
+                        navController.navigate("settings")
+                    },
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Ajustes"
+                            contentDescription = "Ajustes",
+                            tint = if (selectedItem.value == "settings") Color(0xFF1D4ED8) else Color.Gray
                         )
                     },
-                    label = { Text("Ajustes") },
+                    label = {
+                        Text(
+                            "Ajustes",
+                            color = if (selectedItem.value == "settings") Color(0xFF1D4ED8) else Color.Gray
+                        )
+                    },
                     colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
                 )
                 NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Routes.Dashboard.route) },
+                    selected = selectedItem.value == "profile",
+                    onClick = {
+                        selectedItem.value = "profile"
+                        navController.navigate(Routes.Dashboard.route)
+                    },
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.Person,
-                            contentDescription = "Perfil"
+                            contentDescription = "Perfil",
+                            tint = if (selectedItem.value == "profile") Color(0xFF1D4ED8) else Color.Gray
                         )
                     },
-                    label = { Text("Perfil") },
+                    label = {
+                        Text(
+                            "Perfil",
+                            color = if (selectedItem.value == "profile") Color(0xFF1D4ED8) else Color.Gray
+                        )
+                    },
                     colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
                 )
             }
