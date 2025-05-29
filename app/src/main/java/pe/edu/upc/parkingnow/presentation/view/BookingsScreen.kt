@@ -206,6 +206,8 @@ fun BookingsScreen(navController: NavController) {
 
             Button(
                 onClick = {
+                    navController.currentBackStackEntry?.savedStateHandle?.set("parkingName", "Real Plaza Salaverry")
+                    navController.currentBackStackEntry?.savedStateHandle?.set("parkingPrice", "4.00")
                     navController.navigate("ticket")
                 },
                 modifier = Modifier

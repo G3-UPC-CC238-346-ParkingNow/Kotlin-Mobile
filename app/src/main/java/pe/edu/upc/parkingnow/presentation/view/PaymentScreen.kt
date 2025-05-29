@@ -1,5 +1,7 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.view.ParkingOption
+
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
 import androidx.compose.foundation.Canvas
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.DateRange
@@ -46,6 +49,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PaymentScreen(navController: NavController) {
+    val selectedParkingName = navController.currentBackStackEntry?.savedStateHandle?.get<String>("selectedParkingName") ?: ""
+    val selectedParkingPrice = navController.currentBackStackEntry?.savedStateHandle?.get<String>("selectedParkingPrice") ?: ""
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -116,8 +121,33 @@ fun PaymentScreen(navController: NavController) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Saved Payment Methods Section
-                Text("Métodos de Pago Guardados", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(36.dp))
+                // Back arrow and title row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.Black
+                        )
+                    }
+
+                    Text(
+                        text = "Métodos de Pago Guardados",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                // Text("Métodos de Pago Guardados", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(12.dp))
                 if (savedMethods.isEmpty()) {
                     Text("No hay métodos guardados.", fontSize = 14.sp, color = Color.Gray)
@@ -499,6 +529,7 @@ fun PaymentScreen(navController: NavController) {
                             )
                         }
                     }
+                    // Parking info and price REMOVED
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {

@@ -1,4 +1,11 @@
+
 package pe.edu.upc.parkingnow.presentation.view
+
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import pe.edu.upc.parkingnow.R
 
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
@@ -62,14 +69,18 @@ fun TicketScreen(navController: NavController) {
         )
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.login_background),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.White.copy(alpha = 0.85f))
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.Center
         ) {
@@ -105,7 +116,14 @@ fun TicketScreen(navController: NavController) {
 
                 // Botón de pago
                 PaymentButton(
-                    onClick = { navController.navigate(Routes.Payment.route) }
+                    onClick = {
+                        val selected = parkingOptions.find { it.name == selectedParking }
+                        selected?.let {
+                            navController.currentBackStackEntry?.savedStateHandle?.set("selectedParkingName", it.name)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("selectedParkingPrice", it.price)
+                            navController.navigate(Routes.Payment.route)
+                        }
+                    }
                 )
             }
 
