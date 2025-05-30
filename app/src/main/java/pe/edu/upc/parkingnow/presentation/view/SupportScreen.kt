@@ -49,38 +49,37 @@ fun SupportScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        IconButton(
-            onClick = { navController.navigate(Routes.Dashboard.route) },
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.TopStart)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = Color.Black
-            )
-        }
-
-        Spacer(modifier = Modifier
-            .height(16.dp)
-            .align(Alignment.TopStart)
-            .padding(start = 16.dp))
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 10.dp, vertical = 64.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
-            Text(
-                text = "Soporte",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+            ) {
+                IconButton(
+                    onClick = { navController.navigate(Routes.Dashboard.route) },
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.Black
+                    )
+                }
+
+                Text(
+                    text = "Soporte",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
 
             Text(
                 text = "¿En qué podemos ayudarle el día de hoy?",

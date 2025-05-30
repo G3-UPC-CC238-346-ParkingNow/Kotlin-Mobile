@@ -340,6 +340,7 @@ private fun setupUserLocation(context: android.content.Context, map: MapView) {
                     position = userLocation
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     title = "Tu ubicación"
+                    infoWindow = null
                 }
                 map.overlays.add(userMarker)
 
@@ -562,6 +563,7 @@ private fun addParkingMarkers(map: MapView) {
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = name
             snippet = "Estacionamiento disponible"
+            infoWindow = null
         }
         map.overlays.add(marker)
     }

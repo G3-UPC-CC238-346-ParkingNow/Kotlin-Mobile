@@ -53,7 +53,7 @@ fun TrackingScreen(navController: NavController) {
                     .padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { navController.navigate("dashboard/Usuario") }) {
+                IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "Regresar",
@@ -185,55 +185,53 @@ fun TrackingScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.weight(1f)) // Empuja la barra inferior al fondo
+        }
 
-            Spacer(modifier = Modifier.height(24.dp)) // Espacio extra para separación visual
-
-            // Barra inferior con fondo blanco
-            Box(
+        // Barra de navegación inferior completamente blanca
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(bottom = 0.dp)
+        ) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
                     .background(Color.White)
+                    .padding(vertical = 16.dp, horizontal = 24.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Barra inferior al estilo de BookingsScreen con solo 3 íconos (Inicio, Ajustes, Perfil)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val activeColor = Color(0xFF1D4ED8)
-                    val inactiveColor = Color(0xFF9CA3AF)
+                val activeColor = Color(0xFF1D4ED8)
+                val inactiveColor = Color(0xFF9CA3AF)
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
-                            Icon(Icons.Default.Home, contentDescription = "Inicio", tint = activeColor)
-                        }
-                        Text("Inicio", fontSize = 12.sp, color = activeColor)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
+                        Icon(Icons.Default.Home, contentDescription = "Inicio", tint = activeColor)
                     }
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        IconButton(onClick = { navController.navigate(Routes.Settings.route) }) {
-                            Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = inactiveColor)
-                        }
-                        Text("Ajustes", fontSize = 12.sp, color = inactiveColor)
+                    Text("Inicio", fontSize = 12.sp, color = activeColor)
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    IconButton(onClick = { navController.navigate(Routes.Settings.route) }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = inactiveColor)
                     }
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        IconButton(onClick = { navController.navigate(Routes.Login.route) }) {
-                            Icon(Icons.Default.Person, contentDescription = "Perfil", tint = inactiveColor)
-                        }
-                        Text("Perfil", fontSize = 12.sp, color = inactiveColor)
+                    Text("Ajustes", fontSize = 12.sp, color = inactiveColor)
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    IconButton(onClick = { navController.navigate(Routes.Login.route) }) {
+                        Icon(Icons.Default.Person, contentDescription = "Perfil", tint = inactiveColor)
                     }
+                    Text("Perfil", fontSize = 12.sp, color = inactiveColor)
                 }
             }
         }

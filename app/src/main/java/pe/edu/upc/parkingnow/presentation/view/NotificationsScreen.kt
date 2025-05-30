@@ -1,4 +1,3 @@
-
 package pe.edu.upc.parkingnow.presentation.view
 
 import android.widget.Toast
@@ -121,30 +120,52 @@ fun NotificationsScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.weight(1f))
+        }
 
+        // Barra de navegación inferior completamente blanca
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(bottom = 0.dp)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .height(100.dp)
-                    .padding(horizontal = 32.dp),
+                    .padding(vertical = 16.dp, horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Home, contentDescription = "Inicio", tint = Color(0xFF1D4ED8), modifier = Modifier.size(28.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    IconButton(onClick = { navController.navigate(Routes.Dashboard.route) }) {
+                        Icon(Icons.Default.Home, contentDescription = "Inicio", tint = Color(0xFF1D4ED8))
+                    }
                     Text("Inicio", fontSize = 12.sp, color = Color(0xFF1D4ED8))
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = Color.Gray, modifier = Modifier.size(28.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    IconButton(onClick = { navController.navigate(Routes.Settings.route) }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = Color.Gray)
+                    }
                     Text("Ajustes", fontSize = 12.sp, color = Color.Gray)
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Person, contentDescription = "Perfil", tint = Color.Gray, modifier = Modifier.size(28.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    IconButton(onClick = { navController.navigate(Routes.Login.route) }) {
+                        Icon(Icons.Default.Person, contentDescription = "Perfil", tint = Color.Gray)
+                    }
                     Text("Perfil", fontSize = 12.sp, color = Color.Gray)
                 }
             }
         }
     }
 }
-

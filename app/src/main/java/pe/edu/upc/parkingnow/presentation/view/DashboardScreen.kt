@@ -320,6 +320,22 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
 
                                 fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, ctx.mainLooper)
 
+                                // Ejemplo de cómo desactivar InfoWindow en marcadores (adaptar según TicketScreen)
+                                // val marker = Marker(map).apply {
+                                //     position = GeoPoint(lat, lon)
+                                //     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                //     title = null
+                                //     snippet = null
+                                //     setInfoWindow(null)
+                                // }
+                                // val userMarker = Marker(map).apply {
+                                //     position = userLocation
+                                //     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                //     title = null
+                                //     snippet = null
+                                //     setInfoWindow(null)
+                                // }
+
                                 map
                             },
                             modifier = Modifier.fillMaxSize()
