@@ -9,7 +9,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,14 +27,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import pe.edu.upc.parkingnow.R
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun ChangePasswordScreen(navController: NavController) {
     var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     var showConfirmation by remember { mutableStateOf(false) }
     var showWeakPasswordWarning by remember { mutableStateOf(false) }
     var triggerLogin by remember { mutableStateOf(false) }
+
+    // Password validation states
+    val hasMinLength = newPassword.length >= 8
+    val hasUpperCase = newPassword.any { it.isUpperCase() }
+    val hasDigit = newPassword.any { it.isDigit() }
+    val hasSpecialChar = newPassword.any { "!@#$%^&*".contains(it) }
+    val passwordsMatch = newPassword == confirmPassword && newPassword.isNotEmpty()
 
     LaunchedEffect(triggerLogin) {
         if (triggerLogin) {
@@ -50,6 +65,7 @@ fun ChangePasswordScreen(navController: NavController) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Background image with overlay gradient
         Image(
             painter = painterResource(id = R.drawable.login_background),
             contentDescription = null,
@@ -57,127 +73,336 @@ fun ChangePasswordScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        if (showConfirmation) {
-            Snackbar(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(horizontal = 24.dp, vertical = 72.dp),
-                shape = RoundedCornerShape(12.dp),
-                containerColor = Color(0xFF4CAF50),
-                contentColor = Color.White
-            ) {
-                Text("Your password has been successfully changed.", style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-
-        if (showWeakPasswordWarning) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 72.dp, start = 24.dp, end = 24.dp)
-                    .background(
-                        color = Color(0xFFD32F2F),
-                        shape = RoundedCornerShape(12.dp)
+        // Semi-transparent overlay for better text readability
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.7f),
+                            Color.White.copy(alpha = 0.85f)
+                        )
                     )
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Your password must have:\n• At least 8 characters\n• One uppercase letter (A–Z)\n• One number (0–9)\n• One symbol (!, @, #, \$, %, ^, &, *)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White
                 )
+        )
+
+        // Success notification
+        if (showConfirmation) {
+            Card(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(horizontal = 24.dp, vertical = 100.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF4CAF50)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "¡Tu contraseña ha sido cambiada exitosamente!",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
 
+        // Back button
         IconButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 32.dp, start = 16.dp)
+                .padding(top = 48.dp, start = 16.dp)
         ) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color(0xFF4285F4),
+                modifier = Modifier.size(28.dp)
+            )
         }
 
+        // Main content
         Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
-                .padding(top = 160.dp, bottom = 100.dp)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(120.dp))
 
-                Text(
-                    text = "Change\nyour password",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D0D0D)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "This will be your new password for future logins.",
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                OutlinedTextField(
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
-                    label = { Text("New Password") },
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(Icons.Default.Visibility, contentDescription = null)
-                        }
-                    },
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White.copy(alpha = 0.5f),
-                        unfocusedContainerColor = Color.White.copy(alpha = 0.3f),
-                        focusedBorderColor = Color.Black,
-                        unfocusedBorderColor = Color.Gray,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
-                    )
-                )
-            }
-
-            Button(
-                onClick = {
-                    if (
-                        newPassword.length >= 8 &&
-                        newPassword.any { it.isDigit() } &&
-                        newPassword.any { it.isUpperCase() } &&
-                        newPassword.any { "!@#\$%^&*".contains(it) }
-                    ) {
-                        showWeakPasswordWarning = false
-                        showConfirmation = true
-                        triggerLogin = true
-                    } else {
-                        showWeakPasswordWarning = true
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
+            // Main card content
+            Card(
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.Black
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.9f)
                 ),
-                border = BorderStroke(1.dp, Color.Black)
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 8.dp
+                )
             ) {
-                Text("Change Password", fontSize = 16.sp, color = Color.Black)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Icon
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFF4285F4),
+                                        Color(0xFF1976D2)
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LockReset,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Title
+                    Text(
+                        text = "Cambiar Contraseña",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E293B),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Subtitle
+                    Text(
+                        text = "Crea una nueva contraseña segura para proteger tu cuenta",
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // New password input
+                    OutlinedTextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        label = { Text("Nueva contraseña") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color(0xFF4285F4)
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                                    tint = Color(0xFF4285F4)
+                                )
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = Color(0xFF4285F4),
+                            unfocusedBorderColor = Color(0xFFBDBDBD),
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedLabelColor = Color(0xFF4285F4),
+                            unfocusedLabelColor = Color.Gray
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Confirm password input
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = { Text("Confirmar contraseña") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color(0xFF4285F4)
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(
+                                    if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                                    tint = Color(0xFF4285F4)
+                                )
+                            }
+                        },
+                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = Color(0xFF4285F4),
+                            unfocusedBorderColor = Color(0xFFBDBDBD),
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedLabelColor = Color(0xFF4285F4),
+                            unfocusedLabelColor = Color.Gray
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Password requirements
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFF5F9FF)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Requisitos de contraseña:",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF1E293B)
+                            )
+
+                            PasswordRequirementRow(
+                                text = "Al menos 8 caracteres",
+                                isMet = hasMinLength
+                            )
+
+                            PasswordRequirementRow(
+                                text = "Al menos una letra mayúscula (A-Z)",
+                                isMet = hasUpperCase
+                            )
+
+                            PasswordRequirementRow(
+                                text = "Al menos un número (0-9)",
+                                isMet = hasDigit
+                            )
+
+                            PasswordRequirementRow(
+                                text = "Al menos un símbolo (!@#\$%^&*)",
+                                isMet = hasSpecialChar
+                            )
+
+                            PasswordRequirementRow(
+                                text = "Las contraseñas coinciden",
+                                isMet = passwordsMatch
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Change password button
+                    Button(
+                        onClick = {
+                            if (hasMinLength && hasUpperCase && hasDigit && hasSpecialChar && passwordsMatch) {
+                                showWeakPasswordWarning = false
+                                showConfirmation = true
+                                triggerLogin = true
+                            } else {
+                                showWeakPasswordWarning = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4285F4)
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 4.dp
+                        ),
+                        enabled = hasMinLength && hasUpperCase && hasDigit && hasSpecialChar && passwordsMatch
+                    ) {
+                        Text(
+                            "Cambiar Contraseña",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Bottom help text
+            Text(
+                text = "¿Necesitas ayuda? Contacta a nuestro soporte",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
         }
+    }
+}
+
+@Composable
+fun PasswordRequirementRow(text: String, isMet: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(
+            imageVector = if (isMet) Icons.Default.CheckCircle else Icons.Default.Cancel,
+            contentDescription = null,
+            tint = if (isMet) Color(0xFF4CAF50) else Color(0xFFBDBDBD),
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            color = if (isMet) Color(0xFF4CAF50) else Color.Gray
+        )
     }
 }

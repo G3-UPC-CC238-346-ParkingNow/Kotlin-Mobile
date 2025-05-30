@@ -1,4 +1,3 @@
-
 package pe.edu.upc.parkingnow.presentation.view
 
 import androidx.compose.ui.graphics.Brush
@@ -14,6 +13,7 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -37,19 +37,29 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 
+import kotlin.random.Random
 data class ParkingOption(
     val name: String,
     val price: String,
     val rating: String,
-    val ratingValue: Float
+    val ratingValue: Float,
+    val availableSpots: Int = (5..30).random(),
+    val distance: String = "${kotlin.random.Random.nextDouble(0.1, 3.0).let { String.format("%.1f", it) }} km"
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TicketScreen(navController: NavController) {
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     // Configuración del mapa
     LaunchedEffect(Unit) {
@@ -63,13 +73,14 @@ fun TicketScreen(navController: NavController) {
 
     val parkingOptions = remember {
         listOf(
-            ParkingOption("Real Plaza Salaverry", "S/ 5.00 / hora", "⭐ 4.5", 4.5f),
-            ParkingOption("Larcomar", "S/ 6.00 / hora", "⭐ 4.8", 4.8f),
-            ParkingOption("Centro Cívico", "S/ 4.00 / hora", "⭐ 4.3", 4.3f)
+            ParkingOption("Real Plaza Salaverry", "S/ 5.00 / hora", "4.5", 4.5f, 12, "0.8 km"),
+            ParkingOption("Larcomar", "S/ 6.00 / hora", "4.8", 4.8f, 8, "1.2 km"),
+            ParkingOption("Centro Cívico", "S/ 4.00 / hora", "4.3", 4.3f, 15, "0.5 km")
         )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Background image with overlay gradient
         Image(
             painter = painterResource(id = R.drawable.login_background),
             contentDescription = null,
@@ -77,45 +88,141 @@ fun TicketScreen(navController: NavController) {
             contentScale = ContentScale.Crop
         )
 
+        // Semi-transparent overlay for better text readability
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.85f),
+                            Color.White.copy(alpha = 0.9f)
+                        )
+                    )
+                )
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White.copy(alpha = 0.85f))
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.Center
+                .verticalScroll(scrollState)
         ) {
-            // Espaciado superior para centrar verticalmente
-            Spacer(modifier = Modifier.height(60.dp))
-
-            // Header con flecha de retroceso
-            HeaderWithBackButton(
-                title = "Selecciona tu espacio",
-                onBackClick = { navController.popBackStack() }
+            // Top app bar
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Seleccionar Estacionamiento",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E293B)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color(0xFF4285F4),
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Contenido principal
+            // Main content
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
             ) {
-                // Mapa
-                MapSection()
+                // Map section with title
+                Text(
+                    text = "Ubicación",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B),
+                    modifier = Modifier.padding(bottom = 12.dp, top = 8.dp)
+                )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                EnhancedMapSection()
 
-                // Opciones de estacionamiento
-                ParkingOptionsSection(
-                    parkingOptions = parkingOptions,
-                    selectedParking = selectedParking,
-                    onParkingSelected = { selectedParking = it }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Search bar
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    placeholder = { Text("Buscar estacionamiento") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = Color(0xFF4285F4)
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = null,
+                            tint = Color(0xFF4285F4)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF4285F4),
+                        unfocusedBorderColor = Color(0xFFBDBDBD)
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botón de pago
-                PaymentButton(
+                // Parking options section
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Estacionamientos Cercanos",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E293B)
+                    )
+
+                    Text(
+                        text = "Ver todos",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF4285F4)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Enhanced parking options
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    parkingOptions.forEach { parking ->
+                        EnhancedParkingOptionCard(
+                            parking = parking,
+                            isSelected = selectedParking == parking.name,
+                            onClick = { selectedParking = parking.name }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Payment button
+                EnhancedPaymentButton(
                     onClick = {
                         val selected = parkingOptions.find { it.name == selectedParking }
                         selected?.let {
@@ -126,94 +233,83 @@ fun TicketScreen(navController: NavController) {
                     }
                 )
             }
-
-            // Espaciado inferior para centrar verticalmente
-            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }
 
 @Composable
-private fun HeaderWithBackButton(
-    title: String,
-    onBackClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Volver",
-                tint = Color.Black
-            )
-        }
-
-        Text(
-            text = title,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1A1A1A),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1f)
-        )
-
-        // Espacio para equilibrar el diseño
-        Spacer(modifier = Modifier.size(48.dp))
-    }
-}
-
-@Composable
-private fun MapSection() {
+private fun EnhancedMapSection() {
     val context = LocalContext.current
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        AndroidView(
-            factory = { ctx ->
-                createMapView(ctx)
-            },
-            modifier = Modifier.fillMaxSize()
+            .height(250.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
         )
-    }
-}
-
-@Composable
-private fun ParkingOptionsSection(
-    parkingOptions: List<ParkingOption>,
-    selectedParking: String,
-    onParkingSelected: (String) -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "Opciones de estacionamiento",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1A1A1A),
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            AndroidView(
+                factory = { ctx ->
+                    createMapView(ctx)
+                },
+                modifier = Modifier.fillMaxSize()
+            )
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            parkingOptions.forEach { parking ->
-                ParkingOptionCard(
-                    parking = parking,
-                    isSelected = selectedParking == parking.name,
-                    onClick = { onParkingSelected(parking.name) }
+            // Map controls overlay
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FloatingActionButton(
+                    onClick = { /* Zoom in */ },
+                    modifier = Modifier.size(40.dp),
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF4285F4),
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Acercar",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                FloatingActionButton(
+                    onClick = { /* Zoom out */ },
+                    modifier = Modifier.size(40.dp),
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF4285F4),
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Remove,
+                        contentDescription = "Alejar",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            // Current location button
+            FloatingActionButton(
+                onClick = { /* Center on user location */ },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .size(48.dp),
+                containerColor = Color(0xFF4285F4),
+                contentColor = Color.White,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MyLocation,
+                    contentDescription = "Mi ubicación",
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -221,82 +317,191 @@ private fun ParkingOptionsSection(
 }
 
 @Composable
-private fun ParkingOptionCard(
+private fun EnhancedParkingOptionCard(
     parking: ParkingOption,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (isSelected) Color(0xFF0A4FFF) else Color.White
-    val textColor = if (isSelected) Color.White else Color(0xFF1A1A1A)
-    val secondaryTextColor = if (isSelected) Color.White.copy(alpha = 0.9f) else Color(0xFF666666)
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) Color(0xFF4285F4) else Color.White
+        ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 4.dp else 1.dp
+            defaultElevation = if (isSelected) 8.dp else 4.dp
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = parking.name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = textColor
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = parking.name,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) Color.White else Color(0xFF1E293B)
+                    )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    text = parking.price,
-                    fontSize = 14.sp,
-                    color = secondaryTextColor
-                )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = if (isSelected) Color.White.copy(alpha = 0.8f) else Color(0xFF4285F4),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = parking.distance,
+                            fontSize = 14.sp,
+                            color = if (isSelected) Color.White.copy(alpha = 0.8f) else Color.Gray
+                        )
+                    }
+                }
+
+                // Rating badge
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSelected) Color.White.copy(alpha = 0.2f) else Color(0xFFFFF8E1)
+                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (isSelected) Color.White else Color(0xFFFFB300),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = parking.rating,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isSelected) Color.White else Color(0xFFFFB300)
+                        )
+                    }
+                }
             }
 
-            Text(
-                text = parking.rating,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = if (isSelected) Color.White else Color(0xFFFFAA00)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Divider(
+                color = if (isSelected) Color.White.copy(alpha = 0.2f) else Color(0xFFEEEEEE),
+                thickness = 1.dp
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Price
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = parking.price.split(" / ").first(),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) Color.White else Color(0xFF1E293B)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "/ hora",
+                        fontSize = 14.sp,
+                        color = if (isSelected) Color.White.copy(alpha = 0.8f) else Color.Gray
+                    )
+                }
+
+                // Available spots
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.LocalParking,
+                        contentDescription = null,
+                        tint = if (isSelected) Color.White else Color(0xFF4CAF50),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${parking.availableSpots} lugares disponibles",
+                        fontSize = 14.sp,
+                        color = if (isSelected) Color.White else Color(0xFF4CAF50)
+                    )
+                }
+            }
+
+            if (isSelected) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        text = "Seleccionado",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun PaymentButton(onClick: () -> Unit) {
+private fun EnhancedPaymentButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(12.dp),
+            .height(56.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF0A4FFF)
+            containerColor = Color(0xFF4285F4)
         ),
         elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 4.dp
+            defaultElevation = 8.dp
         )
     ) {
-        Text(
-            text = "Pagar",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.White
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Payment,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Continuar al Pago",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
