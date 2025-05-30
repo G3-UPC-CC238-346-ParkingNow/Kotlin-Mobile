@@ -10,6 +10,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.edu.upc.parkingnow.presentation.navigation.AppNavigation
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import pe.edu.upc.parkingnow.ui.theme.ParkingNowTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,10 +20,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ParkingNowTheme {
+            val appViewModel: AppViewModel = viewModel()
+            val isDarkModeEnabled by appViewModel.isDarkMode.collectAsState()
+            ParkingNowTheme(isDarkModeEnabled = isDarkModeEnabled) {
                 val navController = rememberNavController()
                 val userViewModel: UserViewModel = viewModel()
-                AppNavigation(navController = navController, userViewModel = userViewModel)
+                AppNavigation(navController = navController, userViewModel = userViewModel, appViewModel = appViewModel)
             }
         }
     }

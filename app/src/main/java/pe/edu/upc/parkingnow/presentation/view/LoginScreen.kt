@@ -2,6 +2,8 @@ package pe.edu.upc.parkingnow.presentation.view
 
 import pe.edu.upc.parkingnow.R
 
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,38 +31,41 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val isDarkTheme by appViewModel.isDarkMode.collectAsState()
 
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // Background image with overlay gradient
-        Image(
-            painter = painterResource(id = R.drawable.login_background),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.fillMaxSize()
-        )
-
         // Semi-transparent overlay for better text readability
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.7f),
-                            Color.White.copy(alpha = 0.85f)
+                    brush = if (isDarkTheme) {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF121212),
+                                Color(0xFF121212)
+                            )
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.7f),
+                                Color.White.copy(alpha = 0.85f)
+                            )
+                        )
+                    }
                 )
         )
 
@@ -124,7 +129,7 @@ fun LoginScreen(navController: NavController) {
                     .padding(vertical = 16.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.9f)
+                    containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 8.dp
@@ -140,7 +145,7 @@ fun LoginScreen(navController: NavController) {
                         text = "¡Bienvenido de vuelta! 👋",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1565C0),
+                        color = if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF1565C0),
                         textAlign = TextAlign.Center
                     )
 
@@ -149,7 +154,7 @@ fun LoginScreen(navController: NavController) {
                     Text(
                         text = "Inicia sesión en tu cuenta",
                         fontSize = 16.sp,
-                        color = Color.Gray,
+                        color = if (isDarkTheme) Color(0xFFB0BEC5) else Color.Gray,
                         textAlign = TextAlign.Center
                     )
 
@@ -171,12 +176,12 @@ fun LoginScreen(navController: NavController) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
                             focusedBorderColor = Color(0xFF4285F4),
                             unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
                             focusedLabelColor = Color(0xFF4285F4),
                             unfocusedLabelColor = Color.Gray
                         )
@@ -210,12 +215,12 @@ fun LoginScreen(navController: NavController) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
                             focusedBorderColor = Color(0xFF4285F4),
                             unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
                             focusedLabelColor = Color(0xFF4285F4),
                             unfocusedLabelColor = Color.Gray
                         )

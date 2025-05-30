@@ -2,6 +2,7 @@ package pe.edu.upc.parkingnow.presentation.navigation
 
 import SuccessScreen
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -22,7 +23,7 @@ import pe.edu.upc.parkingnow.presentation.view.SettingsScreen
 import pe.edu.upc.parkingnow.presentation.view.NotificationsScreen
 
 @Composable
-fun AppNavigation(navController: NavHostController, userViewModel: UserViewModel) {
+fun AppNavigation(navController: NavHostController, userViewModel: UserViewModel, appViewModel: AppViewModel) {
     NavHost(
         navController = navController,
         startDestination = Routes.Welcome.route
@@ -31,7 +32,7 @@ fun AppNavigation(navController: NavHostController, userViewModel: UserViewModel
             WelcomeScreen(navController = navController)
         }
         composable(Routes.Login.route) {
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController, appViewModel = appViewModel)
         }
         composable(Routes.Register.route) {
             RegisterScreen(navController = navController, userViewModel = userViewModel)
@@ -64,7 +65,7 @@ fun AppNavigation(navController: NavHostController, userViewModel: UserViewModel
             TrackingScreen(navController = navController)
         }
         composable(Routes.Settings.route) {
-            SettingsScreen(navController = navController)
+            SettingsScreen(navController = navController, appViewModel = appViewModel)
         }
         composable(Routes.Notifications.route) {
             NotificationsScreen(navController = navController)

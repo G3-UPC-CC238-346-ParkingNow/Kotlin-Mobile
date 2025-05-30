@@ -22,10 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 @Composable
 fun WelcomeScreen(navController: NavController) {
-    val loginScreenContent = remember { mutableStateOf<@Composable () -> Unit>({ LoginScreen(navController = navController) }) }
+    val appViewModel: AppViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val loginScreenContent = remember {
+        mutableStateOf<@Composable () -> Unit>({
+            LoginScreen(navController = navController, appViewModel = appViewModel)
+        })
+    }
     var showLogin by remember { mutableStateOf(false) }
 
     val alpha = remember { Animatable(1f) }

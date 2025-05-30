@@ -1,5 +1,9 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -33,25 +38,24 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(navController: NavController, appViewModel: AppViewModel) {
     val context = LocalContext.current
+    val viewModel = appViewModel
+    val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
+    val darkModeEnabled by viewModel.isDarkMode.collectAsState()
 
-    // State for switches
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var darkModeEnabled by remember { mutableStateOf(false) }
-
-    // Background gradient
-    val backgroundGradient = Brush.verticalGradient(
+    val backgroundColor = if (darkModeEnabled) Color(0xFF121212) else null
+    val backgroundBrush = if (!darkModeEnabled) Brush.verticalGradient(
         colors = listOf(
             Color(0xFFE6EEFF),
             Color(0xFFF5F9FF)
         )
-    )
+    ) else null
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = backgroundGradient)
+            .background(brush = backgroundBrush ?: SolidColor(backgroundColor ?: Color.White))
     ) {
         Column(
             modifier = Modifier
@@ -71,7 +75,7 @@ fun SettingsScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Regresar",
-                        tint = Color(0xFF4285F4)
+                        tint = if (darkModeEnabled) Color.White else Color(0xFF4285F4)
                     )
                 }
 
@@ -81,7 +85,7 @@ fun SettingsScreen(navController: NavController) {
                     text = "Configuración",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF333333)
+                    color = if (darkModeEnabled) Color.White else Color(0xFF333333)
                 )
             }
 
@@ -117,31 +121,33 @@ fun SettingsScreen(navController: NavController) {
                         text = "ParkingNow",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF333333)
+                        color = if (darkModeEnabled) Color.White else Color(0xFF333333)
                     )
                     Text(
                         text = "Versión 1.0.0",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = if (darkModeEnabled) Color.Gray else Color.Gray
                     )
                 }
             }
 
             // Main settings items
-            SettingsCategory(title = "Cuenta y Seguridad")
+            SettingsCategory(title = "Cuenta y Seguridad", darkModeEnabled = darkModeEnabled)
 
             SettingsItem(
                 icon = Icons.Default.Lock,
                 title = "Privacidad y políticas",
                 onClick = { /* Show toast or navigate */ },
-                navController = navController
+                navController = navController,
+                darkModeEnabled = darkModeEnabled
             )
 
             SettingsItem(
                 icon = Icons.Default.MonetizationOn,
                 title = "Pedir reembolso",
                 onClick = { /* Show toast or navigate */ },
-                navController = navController
+                navController = navController,
+                darkModeEnabled = darkModeEnabled
             )
 
             SettingsItem(
@@ -149,7 +155,8 @@ fun SettingsScreen(navController: NavController) {
                 title = "Registrar robo de carro",
                 onClick = { /* Show toast or navigate */ },
                 navController = navController,
-                tint = Color(0xFFE53935) // Red tint for important action
+                tint = Color(0xFFE53935), // Red tint for important action
+                darkModeEnabled = darkModeEnabled
             )
 
             SettingsItem(
@@ -157,13 +164,14 @@ fun SettingsScreen(navController: NavController) {
                 title = "Eliminar cuenta",
                 onClick = { /* Show toast or navigate */ },
                 navController = navController,
-                tint = Color(0xFFE53935) // Red tint for dangerous action
+                tint = Color(0xFFE53935), // Red tint for dangerous action
+                darkModeEnabled = darkModeEnabled
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Additional settings
-            SettingsCategory(title = "Preferencias")
+            SettingsCategory(title = "Preferencias", darkModeEnabled = darkModeEnabled)
 
             // Notification toggle
             Row(
@@ -175,7 +183,7 @@ fun SettingsScreen(navController: NavController) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
                     contentDescription = null,
-                    tint = Color(0xFF4285F4),
+                    tint = if (darkModeEnabled) Color.White else Color(0xFF4285F4),
                     modifier = Modifier.size(24.dp)
                 )
 
@@ -184,13 +192,13 @@ fun SettingsScreen(navController: NavController) {
                 Text(
                     text = "Notificaciones",
                     fontSize = 16.sp,
-                    color = Color(0xFF333333),
+                    color = if (darkModeEnabled) Color.White else Color(0xFF333333),
                     modifier = Modifier.weight(1f)
                 )
 
                 Switch(
                     checked = notificationsEnabled,
-                    onCheckedChange = { notificationsEnabled = it },
+                    onCheckedChange = { viewModel.toggleNotifications(it) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color(0xFF4285F4),
                         checkedTrackColor = Color(0xFFBBDEFB)
@@ -208,7 +216,7 @@ fun SettingsScreen(navController: NavController) {
                 Icon(
                     imageVector = Icons.Default.DarkMode,
                     contentDescription = null,
-                    tint = Color(0xFF4285F4),
+                    tint = if (darkModeEnabled) Color.White else Color(0xFF4285F4),
                     modifier = Modifier.size(24.dp)
                 )
 
@@ -217,13 +225,13 @@ fun SettingsScreen(navController: NavController) {
                 Text(
                     text = "Modo oscuro",
                     fontSize = 16.sp,
-                    color = Color(0xFF333333),
+                    color = if (darkModeEnabled) Color.White else Color(0xFF333333),
                     modifier = Modifier.weight(1f)
                 )
 
                 Switch(
                     checked = darkModeEnabled,
-                    onCheckedChange = { darkModeEnabled = it },
+                    onCheckedChange = { viewModel.toggleDarkMode(it) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color(0xFF4285F4),
                         checkedTrackColor = Color(0xFFBBDEFB)
@@ -241,7 +249,7 @@ fun SettingsScreen(navController: NavController) {
                 Icon(
                     imageVector = Icons.Default.Language,
                     contentDescription = null,
-                    tint = Color(0xFF4285F4),
+                    tint = if (darkModeEnabled) Color.White else Color(0xFF4285F4),
                     modifier = Modifier.size(24.dp)
                 )
 
@@ -250,14 +258,14 @@ fun SettingsScreen(navController: NavController) {
                 Text(
                     text = "Idioma",
                     fontSize = 16.sp,
-                    color = Color(0xFF333333),
+                    color = if (darkModeEnabled) Color.White else Color(0xFF333333),
                     modifier = Modifier.weight(1f)
                 )
 
                 Text(
                     text = "Español",
                     fontSize = 16.sp,
-                    color = Color.Gray
+                    color = if (darkModeEnabled) Color.Gray else Color.Gray
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -279,7 +287,7 @@ fun SettingsScreen(navController: NavController) {
             Text(
                 text = "© 2023 ParkingNow. Todos los derechos reservados.",
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = if (darkModeEnabled) Color.Gray else Color.Gray,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
@@ -287,12 +295,12 @@ fun SettingsScreen(navController: NavController) {
 }
 
 @Composable
-fun SettingsCategory(title: String) {
+fun SettingsCategory(title: String, darkModeEnabled: Boolean) {
     Text(
         text = title,
         fontSize = 14.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF4285F4),
+        color = if (darkModeEnabled) Color.White else Color(0xFF4285F4),
         modifier = Modifier.padding(vertical = 8.dp)
     )
 }
@@ -303,7 +311,8 @@ fun SettingsItem(
     title: String,
     onClick: () -> Unit,
     navController: NavController,
-    tint: Color = Color(0xFF4285F4)
+    tint: Color = Color(0xFF4285F4),
+    darkModeEnabled: Boolean
 ) {
     Card(
         modifier = Modifier
@@ -312,7 +321,7 @@ fun SettingsItem(
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = if (darkModeEnabled) Color(0xFF1E1E1E) else Color.White
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
@@ -336,7 +345,7 @@ fun SettingsItem(
             Text(
                 text = title,
                 fontSize = 16.sp,
-                color = Color(0xFF333333),
+                color = if (darkModeEnabled) Color.White else Color(0xFF333333),
                 modifier = Modifier.weight(1f)
             )
 
