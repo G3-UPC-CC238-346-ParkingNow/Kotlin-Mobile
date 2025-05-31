@@ -25,9 +25,12 @@ import kotlinx.coroutines.delay
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 @Composable
-fun ForgotPasswordScreen(navController: NavController) {
+fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewModel) {
+    val isDarkMode by appViewModel.isDarkMode.collectAsState()
+
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
@@ -54,30 +57,10 @@ fun ForgotPasswordScreen(navController: NavController) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDarkMode) Color.Black else Color.White)
     ) {
-        // Background image with overlay gradient
-        Image(
-            painter = painterResource(id = R.drawable.login_background),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        // Semi-transparent overlay for better text readability
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.7f),
-                            Color.White.copy(alpha = 0.85f)
-                        )
-                    )
-                )
-        )
-
         // Back button
         IconButton(
             onClick = { navController.navigate(pe.edu.upc.parkingnow.presentation.navigation.Routes.Login.route) },
@@ -180,7 +163,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.9f)
+                    containerColor = if (isDarkMode) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 8.dp
@@ -222,7 +205,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                         text = "¿Olvidaste tu contraseña?",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B),
+                        color = if (isDarkMode) Color.White else Color(0xFF1E293B),
                         textAlign = TextAlign.Center
                     )
 
@@ -232,7 +215,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                     Text(
                         text = "No te preocupes, ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = if (isDarkMode) Color.LightGray else Color.Gray,
                         textAlign = TextAlign.Center,
                         lineHeight = 20.sp
                     )
@@ -255,12 +238,12 @@ fun ForgotPasswordScreen(navController: NavController) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDarkMode) Color(0xFF2C2C2C) else Color.White,
+                            unfocusedContainerColor = if (isDarkMode) Color(0xFF2C2C2C) else Color.White,
                             focusedBorderColor = Color(0xFF4285F4),
                             unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
+                            focusedTextColor = if (isDarkMode) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkMode) Color.White else Color.Black,
                             focusedLabelColor = Color(0xFF4285F4),
                             unfocusedLabelColor = Color.Gray
                         )
@@ -308,7 +291,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                         Text(
                             text = "Volver al inicio de sesión",
                             fontSize = 14.sp,
-                            color = Color(0xFF4285F4),
+                            color = if (isDarkMode) Color(0xFF90CAF9) else Color(0xFF4285F4),
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -321,7 +304,7 @@ fun ForgotPasswordScreen(navController: NavController) {
             Text(
                 text = "¿Necesitas ayuda? Contacta a nuestro soporte",
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = if (isDarkMode) Color.LightGray else Color.Gray,
                 textAlign = TextAlign.Center
             )
         }

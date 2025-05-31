@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
@@ -28,18 +29,16 @@ import pe.edu.upc.parkingnow.R
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
 @Composable
-fun TrackingScreen(navController: NavController) {
+fun TrackingScreen(navController: NavController, appViewModel: AppViewModel) {
     val context = LocalContext.current
+    val isDarkMode = appViewModel.isDarkMode.collectAsState().value
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDarkMode) Color(0xFF121212) else Color.White)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.login_background),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -57,7 +56,7 @@ fun TrackingScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "Regresar",
-                        tint = Color.Black
+                        tint = if (isDarkMode) Color.White else Color.Black
                     )
                 }
             }
@@ -74,7 +73,8 @@ fun TrackingScreen(navController: NavController) {
                         text = "Seguimiento",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
+                        color = if (isDarkMode) Color.White else Color.Black
                     )
                 }
                 // Imagen decorativa a la derecha
@@ -95,7 +95,8 @@ fun TrackingScreen(navController: NavController) {
                     text = "Automóviles registrados",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    color = if (isDarkMode) Color.LightGray else Color.Gray
                 )
 
                 Button(
@@ -106,17 +107,17 @@ fun TrackingScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(60.dp),
                     shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.CameraAlt,
                         contentDescription = null,
-                        tint = Color.Gray,
+                        tint = if (isDarkMode) Color.LightGray else Color.Gray,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Automóviles monitoreados por cámara", color = Color.Gray)
+                    Text("Automóviles monitoreados por cámara", color = if (isDarkMode) Color.LightGray else Color.Gray)
                 }
             }
 
@@ -128,7 +129,8 @@ fun TrackingScreen(navController: NavController) {
                     text = "Últimas alertas registradas",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    color = if (isDarkMode) Color.LightGray else Color.Gray
                 )
 
                 Button(
@@ -139,17 +141,17 @@ fun TrackingScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(60.dp),
                     shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Notifications,
                         contentDescription = null,
-                        tint = Color.Gray,
+                        tint = if (isDarkMode) Color.LightGray else Color.Gray,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Historial de alertas", color = Color.Gray)
+                    Text("Historial de alertas", color = if (isDarkMode) Color.LightGray else Color.Gray)
                 }
             }
 
@@ -159,7 +161,8 @@ fun TrackingScreen(navController: NavController) {
             Text(
                 text = "Mantenga su carro seguro con...",
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = if (isDarkMode) Color.White else Color.Black
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -169,7 +172,7 @@ fun TrackingScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Box(
@@ -178,7 +181,7 @@ fun TrackingScreen(navController: NavController) {
                 ) {
                     Text(
                         text = "Explicación de la cámara de monitoreo",
-                        color = Color.Gray,
+                        color = if (isDarkMode) Color.LightGray else Color.Gray,
                         fontSize = 14.sp
                     )
                 }
@@ -192,13 +195,13 @@ fun TrackingScreen(navController: NavController) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(if (isDarkMode) Color(0xFF1C1C1E) else Color.White)
                 .padding(bottom = 0.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(if (isDarkMode) Color(0xFF1C1C1E) else Color.White)
                     .padding(vertical = 16.dp, horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically

@@ -30,9 +30,11 @@ import pe.edu.upc.parkingnow.R
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 @Composable
-fun ChangePasswordScreen(navController: NavController) {
+fun ChangePasswordScreen(navController: NavController, appViewModel: AppViewModel) {
+    val isDarkModeEnabled by appViewModel.isDarkMode.collectAsState()
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -64,28 +66,32 @@ fun ChangePasswordScreen(navController: NavController) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDarkModeEnabled) Color.Black else Color.White)
+    ) {
         // Background image with overlay gradient
-        Image(
-            painter = painterResource(id = R.drawable.login_background),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.fillMaxSize()
-        )
+        // Image(
+        //     painter = painterResource(id = R.drawable.login_background),
+        //     contentDescription = null,
+        //     contentScale = ContentScale.FillBounds,
+        //     modifier = Modifier.fillMaxSize()
+        // )
 
         // Semi-transparent overlay for better text readability
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.7f),
-                            Color.White.copy(alpha = 0.85f)
-                        )
-                    )
-                )
-        )
+        // Box(
+        //     modifier = Modifier
+        //         .fillMaxSize()
+        //         .background(
+        //             Brush.verticalGradient(
+        //                 colors = listOf(
+        //                     Color.White.copy(alpha = 0.7f),
+        //                     Color.White.copy(alpha = 0.85f)
+        //                 )
+        //             )
+        //         )
+        // )
 
         // Success notification
         if (showConfirmation) {
@@ -153,7 +159,7 @@ fun ChangePasswordScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.9f)
+                    containerColor = if (isDarkModeEnabled) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 8.dp
@@ -195,7 +201,7 @@ fun ChangePasswordScreen(navController: NavController) {
                         text = "Cambiar Contraseña",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B),
+                        color = if (isDarkModeEnabled) Color.White else Color(0xFF1E293B),
                         textAlign = TextAlign.Center
                     )
 
@@ -205,7 +211,7 @@ fun ChangePasswordScreen(navController: NavController) {
                     Text(
                         text = "Crea una nueva contraseña segura para proteger tu cuenta",
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = if (isDarkModeEnabled) Color.Gray else Color.Gray,
                         textAlign = TextAlign.Center,
                         lineHeight = 20.sp
                     )
@@ -238,12 +244,12 @@ fun ChangePasswordScreen(navController: NavController) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDarkModeEnabled) Color(0xFF232323) else Color.White,
+                            unfocusedContainerColor = if (isDarkModeEnabled) Color(0xFF232323) else Color.White,
                             focusedBorderColor = Color(0xFF4285F4),
                             unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
+                            focusedTextColor = if (isDarkModeEnabled) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkModeEnabled) Color.White else Color.Black,
                             focusedLabelColor = Color(0xFF4285F4),
                             unfocusedLabelColor = Color.Gray
                         )
@@ -277,12 +283,12 @@ fun ChangePasswordScreen(navController: NavController) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = if (isDarkModeEnabled) Color(0xFF232323) else Color.White,
+                            unfocusedContainerColor = if (isDarkModeEnabled) Color(0xFF232323) else Color.White,
                             focusedBorderColor = Color(0xFF4285F4),
                             unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
+                            focusedTextColor = if (isDarkModeEnabled) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkModeEnabled) Color.White else Color.Black,
                             focusedLabelColor = Color(0xFF4285F4),
                             unfocusedLabelColor = Color.Gray
                         )
@@ -295,7 +301,7 @@ fun ChangePasswordScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFF5F9FF)
+                            containerColor = if (isDarkModeEnabled) Color(0xFF2A2A2A) else Color(0xFFF5F9FF)
                         ),
                         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
                     ) {
@@ -309,32 +315,37 @@ fun ChangePasswordScreen(navController: NavController) {
                                 text = "Requisitos de contraseña:",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF1E293B)
+                                color = if (isDarkModeEnabled) Color.White else Color(0xFF1E293B)
                             )
 
                             PasswordRequirementRow(
                                 text = "Al menos 8 caracteres",
-                                isMet = hasMinLength
+                                isMet = hasMinLength,
+                                isDarkModeEnabled = isDarkModeEnabled
                             )
 
                             PasswordRequirementRow(
                                 text = "Al menos una letra mayúscula (A-Z)",
-                                isMet = hasUpperCase
+                                isMet = hasUpperCase,
+                                isDarkModeEnabled = isDarkModeEnabled
                             )
 
                             PasswordRequirementRow(
                                 text = "Al menos un número (0-9)",
-                                isMet = hasDigit
+                                isMet = hasDigit,
+                                isDarkModeEnabled = isDarkModeEnabled
                             )
 
                             PasswordRequirementRow(
                                 text = "Al menos un símbolo (!@#\$%^&*)",
-                                isMet = hasSpecialChar
+                                isMet = hasSpecialChar,
+                                isDarkModeEnabled = isDarkModeEnabled
                             )
 
                             PasswordRequirementRow(
                                 text = "Las contraseñas coinciden",
-                                isMet = passwordsMatch
+                                isMet = passwordsMatch,
+                                isDarkModeEnabled = isDarkModeEnabled
                             )
                         }
                     }
@@ -379,7 +390,7 @@ fun ChangePasswordScreen(navController: NavController) {
             Text(
                 text = "¿Necesitas ayuda? Contacta a nuestro soporte",
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = if (isDarkModeEnabled) Color.Gray else Color.Gray,
                 textAlign = TextAlign.Center
             )
         }
@@ -387,7 +398,7 @@ fun ChangePasswordScreen(navController: NavController) {
 }
 
 @Composable
-fun PasswordRequirementRow(text: String, isMet: Boolean) {
+fun PasswordRequirementRow(text: String, isMet: Boolean, isDarkModeEnabled: Boolean = false) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -395,14 +406,18 @@ fun PasswordRequirementRow(text: String, isMet: Boolean) {
         Icon(
             imageVector = if (isMet) Icons.Default.CheckCircle else Icons.Default.Cancel,
             contentDescription = null,
-            tint = if (isMet) Color(0xFF4CAF50) else Color(0xFFBDBDBD),
+            tint = if (isMet) Color(0xFF4CAF50) else if (isDarkModeEnabled) Color.LightGray else Color(0xFFBDBDBD),
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
             fontSize = 12.sp,
-            color = if (isMet) Color(0xFF4CAF50) else Color.Gray
+            color = if (isDarkModeEnabled) {
+                if (isMet) Color(0xFF4CAF50) else Color.LightGray
+            } else {
+                if (isMet) Color(0xFF4CAF50) else Color.Gray
+            }
         )
     }
 }

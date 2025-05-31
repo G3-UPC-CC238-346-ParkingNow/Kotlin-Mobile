@@ -1,5 +1,7 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
@@ -36,6 +38,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -57,8 +60,9 @@ data class ParkingOption(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketScreen(navController: NavController) {
+fun TicketScreen(navController: NavController, appViewModel: AppViewModel) {
     val context = LocalContext.current
+    val isDarkTheme by appViewModel.isDarkMode.collectAsState()
     val scrollState = rememberScrollState()
 
     // Configuración del mapa
@@ -88,17 +92,26 @@ fun TicketScreen(navController: NavController) {
             contentScale = ContentScale.Crop
         )
 
-        // Semi-transparent overlay for better text readability
+        // Semi-transparent overlay for better text readability, dark mode compatible
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.85f),
-                            Color.White.copy(alpha = 0.9f)
+                    if (isDarkTheme) {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF121212),
+                                Color(0xFF121212)
+                            )
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.85f),
+                                Color.White.copy(alpha = 0.9f)
+                            )
+                        )
+                    }
                 )
         )
 
@@ -114,7 +127,7 @@ fun TicketScreen(navController: NavController) {
                         text = "Seleccionar Estacionamiento",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B)
+                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                     )
                 },
                 navigationIcon = {
@@ -144,7 +157,7 @@ fun TicketScreen(navController: NavController) {
                     text = "Ubicación",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B),
+                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B),
                     modifier = Modifier.padding(bottom = 12.dp, top = 8.dp)
                 )
 
@@ -193,7 +206,7 @@ fun TicketScreen(navController: NavController) {
                         text = "Estacionamientos Cercanos",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B)
+                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                     )
 
                     Text(
@@ -214,7 +227,8 @@ fun TicketScreen(navController: NavController) {
                         EnhancedParkingOptionCard(
                             parking = parking,
                             isSelected = selectedParking == parking.name,
-                            onClick = { selectedParking = parking.name }
+                            onClick = { selectedParking = parking.name },
+                            isDarkTheme = isDarkTheme
                         )
                     }
                 }
@@ -320,7 +334,8 @@ private fun EnhancedMapSection() {
 private fun EnhancedParkingOptionCard(
     parking: ParkingOption,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isDarkTheme: Boolean
 ) {
     Card(
         modifier = Modifier
@@ -328,7 +343,9 @@ private fun EnhancedParkingOptionCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color(0xFF4285F4) else Color.White
+            containerColor = if (isSelected) Color(0xFF4285F4)
+            else if (isDarkTheme) Color(0xFF1E1E1E)
+            else Color.White
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isSelected) 8.dp else 4.dp
@@ -349,7 +366,9 @@ private fun EnhancedParkingOptionCard(
                         text = parking.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) Color.White else Color(0xFF1E293B)
+                        color = if (isSelected) Color.White
+                            else if (isDarkTheme) Color.White
+                            else Color(0xFF1E293B)
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -365,7 +384,9 @@ private fun EnhancedParkingOptionCard(
                         Text(
                             text = parking.distance,
                             fontSize = 14.sp,
-                            color = if (isSelected) Color.White.copy(alpha = 0.8f) else Color.Gray
+                            color = if (isSelected) Color.White.copy(alpha = 0.8f)
+                                else if (isDarkTheme) Color.LightGray
+                                else Color.Gray
                         )
                     }
                 }
@@ -418,13 +439,17 @@ private fun EnhancedParkingOptionCard(
                         text = parking.price.split(" / ").first(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) Color.White else Color(0xFF1E293B)
+                        color = if (isSelected) Color.White
+                            else if (isDarkTheme) Color.White
+                            else Color(0xFF1E293B)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "/ hora",
                         fontSize = 14.sp,
-                        color = if (isSelected) Color.White.copy(alpha = 0.8f) else Color.Gray
+                        color = if (isSelected) Color.White.copy(alpha = 0.8f)
+                            else if (isDarkTheme) Color.LightGray
+                            else Color.Gray
                     )
                 }
 
@@ -433,14 +458,16 @@ private fun EnhancedParkingOptionCard(
                     Icon(
                         imageVector = Icons.Default.LocalParking,
                         contentDescription = null,
-                        tint = if (isSelected) Color.White else Color(0xFF4CAF50),
+                        tint = if (isSelected) Color.White else if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50),
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${parking.availableSpots} lugares disponibles",
                         fontSize = 14.sp,
-                        color = if (isSelected) Color.White else Color(0xFF4CAF50)
+                        color = if (isSelected) Color.White
+                            else if (isDarkTheme) Color(0xFF81C784)
+                            else Color(0xFF4CAF50)
                     )
                 }
             }

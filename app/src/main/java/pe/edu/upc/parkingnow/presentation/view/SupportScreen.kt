@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Send
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,20 +34,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import pe.edu.upc.parkingnow.R
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 @Composable
-fun SupportScreen(navController: NavController) {
+fun SupportScreen(navController: NavController, appViewModel: AppViewModel) {
+    val isDarkMode = appViewModel.isDarkMode.collectAsState().value
     val context = LocalContext.current
     // Estado para los campos de texto
     val problema = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
     val comentario = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.login_background),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(if (isDarkMode) Color(0xFF121212) else Color.White)
         )
 
         Column(
@@ -68,7 +70,7 @@ fun SupportScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.Black
+                        tint = if (isDarkMode) Color.White else Color.Black
                     )
                 }
 
@@ -76,7 +78,7 @@ fun SupportScreen(navController: NavController) {
                     text = "Soporte",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = if (isDarkMode) Color.White else Color.Black,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -85,7 +87,7 @@ fun SupportScreen(navController: NavController) {
                 text = "¿En qué podemos ayudarle el día de hoy?",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1A1A1A),
+                color = if (isDarkMode) Color.White else Color(0xFF1A1A1A),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -128,7 +130,7 @@ fun SupportScreen(navController: NavController) {
                 text = "Comentarios y sugerencias",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1A1A1A),
+                color = if (isDarkMode) Color.White else Color(0xFF1A1A1A),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -170,7 +172,7 @@ fun SupportScreen(navController: NavController) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(if (isDarkMode) Color(0xFF1C1C1E) else Color.White)
                 .padding(vertical = 8.dp)
                 .align(Alignment.BottomCenter),
             horizontalArrangement = Arrangement.SpaceEvenly,

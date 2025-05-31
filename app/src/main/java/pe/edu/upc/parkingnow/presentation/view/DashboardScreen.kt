@@ -56,11 +56,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.border
 
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) {
+fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, appViewModel: AppViewModel) {
     val currentUsername by userViewModel.username.collectAsState()
+    val isDarkTheme = appViewModel.isDarkMode.collectAsState().value
     val context = LocalContext.current
     Configuration.getInstance().load(context.applicationContext, context.getSharedPreferences("osmdroid", 0))
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -93,20 +95,29 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
     }
 
     // Background gradient
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFFE6EEFF),
-            Color(0xFFF5F9FF),
-            Color.White
+    val backgroundGradient = if (isDarkTheme) {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFF121212),
+                Color(0xFF121212)
+            )
         )
-    )
+    } else {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFFE6EEFF),
+                Color(0xFFF5F9FF),
+                Color.White
+            )
+        )
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.width(300.dp),
-                drawerContainerColor = Color.White
+                drawerContainerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
             ) {
                 // Header with gradient background
                 Box(
@@ -114,12 +125,21 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                         .fillMaxWidth()
                         .height(180.dp)
                         .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF4285F4),
-                                    Color(0xFF1976D2)
+                            brush = if (isDarkTheme) {
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFF2C2C2C),
+                                        Color(0xFF2C2C2C)
+                                    )
                                 )
-                            )
+                            } else {
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFF4285F4),
+                                        Color(0xFF1976D2)
+                                    )
+                                )
+                            }
                         )
                         .padding(24.dp),
                     contentAlignment = Alignment.BottomStart
@@ -171,27 +191,27 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Menu items with better styling
-                DrawerMenuItem("Inicio", Icons.Outlined.Home, true) {
+                DrawerMenuItem("Inicio", Icons.Outlined.Home, true, isDarkTheme) {
                     scope.launch { drawerState.close() }
                     navController.navigate(Routes.Dashboard.route)
                 }
-                DrawerMenuItem("Reservas", Icons.Outlined.CalendarToday) {
+                DrawerMenuItem("Reservas", Icons.Outlined.CalendarToday, false, isDarkTheme) {
                     scope.launch { drawerState.close() }
                     navController.navigate(Routes.Bookings.route)
                 }
-                DrawerMenuItem("Soporte", Icons.Outlined.SupportAgent) {
+                DrawerMenuItem("Soporte", Icons.Outlined.SupportAgent, false, isDarkTheme) {
                     scope.launch { drawerState.close() }
                     navController.navigate(Routes.Support.route)
                 }
-                DrawerMenuItem("Seguimiento", Icons.Outlined.Place) {
+                DrawerMenuItem("Seguimiento", Icons.Outlined.Place, false, isDarkTheme) {
                     scope.launch { drawerState.close() }
                     navController.navigate(Routes.Tracking.route)
                 }
-                DrawerMenuItem("Configuración", Icons.Outlined.Settings) {
+                DrawerMenuItem("Configuración", Icons.Outlined.Settings, false, isDarkTheme) {
                     scope.launch { drawerState.close() }
                     navController.navigate(Routes.Settings.route)
                 }
-                DrawerMenuItem("Notificación", Icons.Outlined.Notifications) {
+                DrawerMenuItem("Notificación", Icons.Outlined.Notifications, false, isDarkTheme) {
                     scope.launch { drawerState.close() }
                     navController.navigate(Routes.Notifications.route)
                 }
@@ -208,7 +228,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                             navController.navigate(Routes.Login.route)
                         },
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFEBEE)
+                        containerColor = if (isDarkTheme) Color(0xFF3A3A3A) else Color(0xFFFFEBEE)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -242,10 +262,10 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
             topBar = {
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White,
-                        titleContentColor = Color(0xFF1E293B),
-                        navigationIconContentColor = Color(0xFF4285F4),
-                        actionIconContentColor = Color(0xFF4285F4)
+                        containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White,
+                        titleContentColor = if (isDarkTheme) Color.White else Color(0xFF1E293B),
+                        navigationIconContentColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                        actionIconContentColor = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                     ),
                     title = {
                         Column {
@@ -257,7 +277,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                             Text(
                                 "Gestiona tu estacionamiento",
                                 fontSize = 12.sp,
-                                color = Color.Gray
+                                color = if (isDarkTheme) Color.LightGray else Color.Gray
                             )
                         }
                     },
@@ -340,7 +360,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                     text = "Acciones Rápidas",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B),
+                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
@@ -354,9 +374,10 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                         title = "Favoritos",
                         subtitle = "Lugares marcados",
                         icon = Icons.Default.Favorite,
-                        backgroundColor = Color(0xFFE8F5E8),
+                        backgroundColor = if (isDarkTheme) Color(0xFF2E7D32) else Color(0xFFE8F5E8),
                         iconColor = Color(0xFF4CAF50),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        isDarkTheme = isDarkTheme
                     ) {
                         // Navigate to favorites
                     }
@@ -365,9 +386,10 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                         title = "Ofertas",
                         subtitle = "Descuentos especiales",
                         icon = Icons.Default.LocalOffer,
-                        backgroundColor = Color(0xFFFFF3E0),
+                        backgroundColor = if (isDarkTheme) Color(0xFFEF6C00) else Color(0xFFFFF3E0),
                         iconColor = Color(0xFFFF9800),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        isDarkTheme = isDarkTheme
                     ) {
                         // Navigate to offers
                     }
@@ -381,7 +403,9 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                             .padding(horizontal = 16.dp),
                         shape = RoundedCornerShape(20.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
+                        )
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp)
@@ -396,7 +420,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                                         text = "Mapa en Tiempo Real",
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1E293B)
+                                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                                     )
                                     AnimatedContent(
                                         targetState = district.value
@@ -404,7 +428,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                                         Text(
                                             text = if (districtText.isNotEmpty()) "📍 $districtText" else "Obteniendo ubicación...",
                                             fontSize = 14.sp,
-                                            color = Color(0xFF4285F4)
+                                            color = if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF4285F4)
                                         )
                                     }
                                 }
@@ -432,7 +456,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel) 
                                     .fillMaxWidth()
                                     .height(280.dp)
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(Color(0xFFF5F5F5))
+                                    .background(if (isDarkTheme) Color(0xFF2A2A2A) else Color(0xFFF5F5F5))
                             ) {
                                 AndroidView(
                                     factory = { ctx ->
@@ -515,6 +539,7 @@ fun EnhancedDashboardCard(
     backgroundColor: Color,
     iconColor: Color,
     modifier: Modifier = Modifier,
+    isDarkTheme: Boolean,
     onClick: () -> Unit
 ) {
     Card(
@@ -543,12 +568,12 @@ fun EnhancedDashboardCard(
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                 )
                 Text(
                     text = subtitle,
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = if (isDarkTheme) Color.LightGray else Color.Gray
                 )
             }
         }
@@ -560,6 +585,7 @@ fun DrawerMenuItem(
     label: String,
     icon: ImageVector,
     isSelected: Boolean = false,
+    isDarkTheme: Boolean,
     onClick: () -> Unit
 ) {
     Card(
@@ -568,7 +594,11 @@ fun DrawerMenuItem(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color(0xFFE3F2FD) else Color.Transparent
+            containerColor = if (isSelected) {
+                if (isDarkTheme) Color(0xFF3A3A3A) else Color(0xFFE3F2FD)
+            } else {
+                Color.Transparent
+            }
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -582,14 +612,22 @@ fun DrawerMenuItem(
                 imageVector = icon,
                 contentDescription = label,
                 modifier = Modifier.size(24.dp),
-                tint = if (isSelected) Color(0xFF1976D2) else Color(0xFF4285F4)
+                tint = if (isSelected) {
+                    if (isDarkTheme) Color.White else Color(0xFF1976D2)
+                } else {
+                    if (isDarkTheme) Color.LightGray else Color(0xFF4285F4)
+                }
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = label,
                 fontSize = 16.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) Color(0xFF1976D2) else Color(0xFF1E293B)
+                color = if (isSelected) {
+                    if (isDarkTheme) Color.White else Color(0xFF1976D2)
+                } else {
+                    if (isDarkTheme) Color.White else Color(0xFF1E293B)
+                }
             )
         }
     }

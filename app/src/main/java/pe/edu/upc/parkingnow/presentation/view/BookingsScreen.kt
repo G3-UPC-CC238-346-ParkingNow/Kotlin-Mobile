@@ -38,35 +38,40 @@ import pe.edu.upc.parkingnow.R
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookingsScreen(navController: NavController) {
+fun BookingsScreen(navController: NavController, appViewModel: AppViewModel) {
+    val isDarkTheme by appViewModel.isDarkMode.collectAsState()
     val selectedItem = remember { mutableStateOf("bookings") }
     val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Background image with overlay gradient
-        Image(
-            painter = painterResource(id = R.drawable.login_background),
-            contentDescription = "Background",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
         // Semi-transparent overlay for better text readability
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.7f),
-                            Color.White.copy(alpha = 0.85f)
+                    brush = if (isDarkTheme) {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF121212),
+                                Color(0xFF121212)
+                            )
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.7f),
+                                Color.White.copy(alpha = 0.85f)
+                            )
+                        )
+                    }
                 )
         )
 
@@ -82,7 +87,7 @@ fun BookingsScreen(navController: NavController) {
                         text = "Mis Reservas",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B)
+                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                     )
                 },
                 navigationIcon = {
@@ -90,7 +95,7 @@ fun BookingsScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color(0xFF4285F4),
+                            tint = if (isDarkTheme) Color.White else Color(0xFF4285F4),
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -100,13 +105,13 @@ fun BookingsScreen(navController: NavController) {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF4285F4)),
+                            .background(if (isDarkTheme) Color.White else Color(0xFF4285F4)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "User Icon",
-                            tint = Color.White,
+                            tint = if (isDarkTheme) Color(0xFF1E293B) else Color.White,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -129,10 +134,11 @@ fun BookingsScreen(navController: NavController) {
                     title = "Reservas Activas",
                     subtitle = "Gestiona tus reservas actuales",
                     icon = Icons.Default.CalendarToday,
-                    backgroundColor = Color(0xFFE8F5E8),
-                    iconColor = Color(0xFF4CAF50),
+                    backgroundColor = if (isDarkTheme) Color(0xFF232D23) else Color(0xFFE8F5E8),
+                    iconColor = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50),
                     buttonText = "Ver reservas activas",
-                    onButtonClick = { /* Navigate to active bookings */ }
+                    onButtonClick = { /* Navigate to active bookings */ },
+                    isDarkTheme = isDarkTheme
                 )
 
                 // Make new reservation section
@@ -140,14 +146,15 @@ fun BookingsScreen(navController: NavController) {
                     title = "Nueva Reserva",
                     subtitle = "Encuentra y reserva un estacionamiento",
                     icon = Icons.Default.Add,
-                    backgroundColor = Color(0xFFE3F2FD),
-                    iconColor = Color(0xFF2196F3),
+                    backgroundColor = if (isDarkTheme) Color(0xFF233045) else Color(0xFFE3F2FD),
+                    iconColor = if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF2196F3),
                     buttonText = "Realizar reserva",
                     onButtonClick = {
                         navController.currentBackStackEntry?.savedStateHandle?.set("parkingName", "Real Plaza Salaverry")
                         navController.currentBackStackEntry?.savedStateHandle?.set("parkingPrice", "4.00")
                         navController.navigate("ticket")
-                    }
+                    },
+                    isDarkTheme = isDarkTheme
                 )
 
                 // History section
@@ -155,10 +162,11 @@ fun BookingsScreen(navController: NavController) {
                     title = "Historial",
                     subtitle = "Revisa tus reservas anteriores",
                     icon = Icons.Default.History,
-                    backgroundColor = Color(0xFFFFF3E0),
-                    iconColor = Color(0xFFFF9800),
+                    backgroundColor = if (isDarkTheme) Color(0xFF33291F) else Color(0xFFFFF3E0),
+                    iconColor = if (isDarkTheme) Color(0xFFFFB74D) else Color(0xFFFF9800),
                     buttonText = "Ver historial",
-                    onButtonClick = { /* Navigate to history */ }
+                    onButtonClick = { /* Navigate to history */ },
+                    isDarkTheme = isDarkTheme
                 )
 
                 // Favorites section
@@ -166,7 +174,7 @@ fun BookingsScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.9f)
+                        containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
@@ -183,13 +191,13 @@ fun BookingsScreen(navController: NavController) {
                                 modifier = Modifier
                                     .size(48.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFFFEBEE)),
+                                    .background(if (isDarkTheme) Color(0xFF2D1A1C) else Color(0xFFFFEBEE)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
                                     contentDescription = null,
-                                    tint = Color(0xFFE91E63),
+                                    tint = if (isDarkTheme) Color(0xFFFF80AB) else Color(0xFFE91E63),
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -201,12 +209,12 @@ fun BookingsScreen(navController: NavController) {
                                     text = "Lugares Favoritos",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E293B)
+                                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                                 )
                                 Text(
                                     text = "Tus estacionamientos preferidos",
                                     fontSize = 14.sp,
-                                    color = Color.Gray
+                                    color = if (isDarkTheme) Color.Gray else Color.Gray
                                 )
                             }
                         }
@@ -218,7 +226,7 @@ fun BookingsScreen(navController: NavController) {
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFF8F9FA)
+                                containerColor = if (isDarkTheme) Color(0xFF232323) else Color(0xFFF8F9FA)
                             )
                         ) {
                             Row(
@@ -230,7 +238,7 @@ fun BookingsScreen(navController: NavController) {
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = null,
-                                    tint = Color(0xFF4285F4),
+                                    tint = if (isDarkTheme) Color.White else Color(0xFF4285F4),
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -238,13 +246,13 @@ fun BookingsScreen(navController: NavController) {
                                     text = "Estacionamiento Real Plaza Salaverry",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF1E293B),
+                                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B),
                                     modifier = Modifier.weight(1f)
                                 )
                                 Icon(
                                     imageVector = Icons.Default.Star,
                                     contentDescription = null,
-                                    tint = Color(0xFFFFC107),
+                                    tint = if (isDarkTheme) Color(0xFFFFC107) else Color(0xFFFFC107),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -257,7 +265,7 @@ fun BookingsScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.9f)
+                        containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
@@ -274,13 +282,13 @@ fun BookingsScreen(navController: NavController) {
                                 modifier = Modifier
                                     .size(48.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFF3E5F5)),
+                                    .background(if (isDarkTheme) Color(0xFF2B2030) else Color(0xFFF3E5F5)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.BookmarkBorder,
                                     contentDescription = null,
-                                    tint = Color(0xFF9C27B0),
+                                    tint = if (isDarkTheme) Color(0xFFE1BEE7) else Color(0xFF9C27B0),
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -292,12 +300,12 @@ fun BookingsScreen(navController: NavController) {
                                     text = "Lugares Guardados",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E293B)
+                                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                                 )
                                 Text(
                                     text = "Estacionamientos que has guardado",
                                     fontSize = 14.sp,
-                                    color = Color.Gray
+                                    color = if (isDarkTheme) Color.Gray else Color.Gray
                                 )
                             }
                         }
@@ -309,7 +317,7 @@ fun BookingsScreen(navController: NavController) {
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFF8F9FA)
+                                containerColor = if (isDarkTheme) Color(0xFF232323) else Color(0xFFF8F9FA)
                             )
                         ) {
                             Row(
@@ -321,7 +329,7 @@ fun BookingsScreen(navController: NavController) {
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = null,
-                                    tint = Color(0xFF4285F4),
+                                    tint = if (isDarkTheme) Color.White else Color(0xFF4285F4),
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -329,13 +337,13 @@ fun BookingsScreen(navController: NavController) {
                                     text = "Estacionamiento Kennedy Park - Miraflores",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF1E293B),
+                                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B),
                                     modifier = Modifier.weight(1f)
                                 )
                                 Icon(
                                     imageVector = Icons.Default.BookmarkBorder,
                                     contentDescription = null,
-                                    tint = Color(0xFF9C27B0),
+                                    tint = if (isDarkTheme) Color(0xFFE1BEE7) else Color(0xFF9C27B0),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -355,7 +363,7 @@ fun BookingsScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.95f)
+                    containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.95f)
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
@@ -374,13 +382,17 @@ fun BookingsScreen(navController: NavController) {
                             Icon(
                                 imageVector = Icons.Outlined.Home,
                                 contentDescription = "Inicio",
-                                tint = if (selectedItem.value == "home") Color(0xFF4285F4) else Color.Gray
+                                tint = if (selectedItem.value == "home") {
+                                    if (isDarkTheme) Color.White else Color(0xFF4285F4)
+                                } else Color.Gray
                             )
                         },
                         label = {
                             Text(
                                 "Inicio",
-                                color = if (selectedItem.value == "home") Color(0xFF4285F4) else Color.Gray,
+                                color = if (selectedItem.value == "home") {
+                                    if (isDarkTheme) Color.White else Color(0xFF4285F4)
+                                } else Color.Gray,
                                 fontWeight = if (selectedItem.value == "home") FontWeight.Bold else FontWeight.Normal
                             )
                         },
@@ -395,13 +407,17 @@ fun BookingsScreen(navController: NavController) {
                             Icon(
                                 imageVector = Icons.Default.CalendarToday,
                                 contentDescription = "Reservas",
-                                tint = if (selectedItem.value == "bookings") Color(0xFF4285F4) else Color.Gray
+                                tint = if (selectedItem.value == "bookings") {
+                                    if (isDarkTheme) Color.White else Color(0xFF4285F4)
+                                } else Color.Gray
                             )
                         },
                         label = {
                             Text(
                                 "Reservas",
-                                color = if (selectedItem.value == "bookings") Color(0xFF4285F4) else Color.Gray,
+                                color = if (selectedItem.value == "bookings") {
+                                    if (isDarkTheme) Color.White else Color(0xFF4285F4)
+                                } else Color.Gray,
                                 fontWeight = if (selectedItem.value == "bookings") FontWeight.Bold else FontWeight.Normal
                             )
                         },
@@ -417,13 +433,17 @@ fun BookingsScreen(navController: NavController) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Ajustes",
-                                tint = if (selectedItem.value == "settings") Color(0xFF4285F4) else Color.Gray
+                                tint = if (selectedItem.value == "settings") {
+                                    if (isDarkTheme) Color.White else Color(0xFF4285F4)
+                                } else Color.Gray
                             )
                         },
                         label = {
                             Text(
                                 "Ajustes",
-                                color = if (selectedItem.value == "settings") Color(0xFF4285F4) else Color.Gray,
+                                color = if (selectedItem.value == "settings") {
+                                    if (isDarkTheme) Color.White else Color(0xFF4285F4)
+                                } else Color.Gray,
                                 fontWeight = if (selectedItem.value == "settings") FontWeight.Bold else FontWeight.Normal
                             )
                         },
@@ -443,13 +463,14 @@ fun EnhancedBookingCard(
     backgroundColor: Color,
     iconColor: Color,
     buttonText: String,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
+    isDarkTheme: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.9f)
+            containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
@@ -484,12 +505,12 @@ fun EnhancedBookingCard(
                         text = title,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B)
+                        color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                     )
                     Text(
                         text = subtitle,
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = if (isDarkTheme) Color.Gray else Color.Gray
                     )
                 }
             }
@@ -501,7 +522,7 @@ fun EnhancedBookingCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4285F4)
+                    containerColor = if (isDarkTheme) Color(0xFF4285F4) else Color(0xFF4285F4)
                 ),
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 4.dp

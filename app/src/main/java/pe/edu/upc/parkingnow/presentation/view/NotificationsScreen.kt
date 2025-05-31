@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -24,20 +25,20 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.collectAsState
 import pe.edu.upc.parkingnow.R
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
 @Composable
-fun NotificationsScreen(navController: NavController) {
+fun NotificationsScreen(navController: NavController, appViewModel: AppViewModel) {
     val context = LocalContext.current
+    val isDarkMode = appViewModel.isDarkMode.collectAsState().value
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.login_background),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDarkMode) Color(0xFF121212) else Color.White)
+    ) {
 
         Column(
             modifier = Modifier
@@ -57,14 +58,15 @@ fun NotificationsScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Regresar",
-                        tint = Color.Black
+                        tint = if (isDarkMode) Color.White else Color.Black
                     )
                 }
             }
             Text(
                 text = "Notificaciones",
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = if (isDarkMode) Color.White else Color.Black
             )
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -74,6 +76,7 @@ fun NotificationsScreen(navController: NavController) {
                     text = "Recibos",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
+                    color = if (isDarkMode) Color.White else Color.Black,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -85,11 +88,11 @@ fun NotificationsScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White)
                 ) {
-                    Icon(Icons.Default.Receipt, contentDescription = null, tint = Color.Gray)
+                    Icon(Icons.Default.Receipt, contentDescription = null, tint = if (isDarkMode) Color.LightGray else Color.Gray)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ver recibos", color = Color.Gray)
+                    Text("Ver recibos", color = if (isDarkMode) Color.LightGray else Color.Gray)
                 }
             }
 
@@ -100,6 +103,7 @@ fun NotificationsScreen(navController: NavController) {
                     text = "Notificaciones de lugares favoritos",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
+                    color = if (isDarkMode) Color.White else Color.Black,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -111,29 +115,29 @@ fun NotificationsScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color(0xFF1C1C1E) else Color.White)
                 ) {
-                    Icon(Icons.Default.Place, contentDescription = null, tint = Color.Gray)
+                    Icon(Icons.Default.Place, contentDescription = null, tint = if (isDarkMode) Color.LightGray else Color.Gray)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ver favoritos", color = Color.Gray)
+                    Text("Ver favoritos", color = if (isDarkMode) Color.LightGray else Color.Gray)
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
         }
 
-        // Barra de navegación inferior completamente blanca
+        // Barra de navegación inferior compatible con modo oscuro
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(if (isDarkMode) Color(0xFF1C1C1E) else Color.White)
                 .padding(bottom = 0.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(if (isDarkMode) Color(0xFF1C1C1E) else Color.White)
                     .padding(vertical = 16.dp, horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
@@ -152,18 +156,18 @@ fun NotificationsScreen(navController: NavController) {
                     modifier = Modifier.weight(1f)
                 ) {
                     IconButton(onClick = { navController.navigate(Routes.Settings.route) }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = Color.Gray)
+                        Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = if (isDarkMode) Color.LightGray else Color.Gray)
                     }
-                    Text("Ajustes", fontSize = 12.sp, color = Color.Gray)
+                    Text("Ajustes", fontSize = 12.sp, color = if (isDarkMode) Color.LightGray else Color.Gray)
                 }
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.weight(1f)
                 ) {
                     IconButton(onClick = { navController.navigate(Routes.Login.route) }) {
-                        Icon(Icons.Default.Person, contentDescription = "Perfil", tint = Color.Gray)
+                        Icon(Icons.Default.Person, contentDescription = "Perfil", tint = if (isDarkMode) Color.LightGray else Color.Gray)
                     }
-                    Text("Perfil", fontSize = 12.sp, color = Color.Gray)
+                    Text("Perfil", fontSize = 12.sp, color = if (isDarkMode) Color.LightGray else Color.Gray)
                 }
             }
         }

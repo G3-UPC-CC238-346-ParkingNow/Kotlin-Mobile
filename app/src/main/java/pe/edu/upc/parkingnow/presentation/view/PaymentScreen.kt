@@ -1,5 +1,7 @@
 package pe.edu.upc.parkingnow.presentation.view
 
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+
 import pe.edu.upc.parkingnow.presentation.view.ParkingOption
 
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
@@ -13,10 +15,13 @@ import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -32,6 +37,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -48,10 +54,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun PaymentScreen(navController: NavController) {
+fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
     val selectedParkingName = navController.currentBackStackEntry?.savedStateHandle?.get<String>("selectedParkingName") ?: ""
     val selectedParkingPrice = navController.currentBackStackEntry?.savedStateHandle?.get<String>("selectedParkingPrice") ?: ""
     val context = LocalContext.current
+    val isDarkTheme by appViewModel.isDarkMode.collectAsState()
     val scope = rememberCoroutineScope()
 
     var savedMethods by remember { mutableStateOf(mutableListOf<Map<String, String>>()) }
@@ -109,13 +116,13 @@ fun PaymentScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFEFF3FF))
+                .background(if (isDarkTheme) Color(0xFF1C1C1E) else Color(0xFFEFF3FF))
                 .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White, shape = RoundedCornerShape(16.dp))
+                    .background(if (isDarkTheme) Color(0xFF2C2C2E) else Color.White, shape = RoundedCornerShape(16.dp))
                     .padding(24.dp)
                     .fillMaxWidth(0.9f)
                     .verticalScroll(rememberScrollState()),
@@ -136,7 +143,7 @@ fun PaymentScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.Black
+                            tint = if (isDarkTheme) Color.White else Color.Black
                         )
                     }
 
@@ -144,13 +151,18 @@ fun PaymentScreen(navController: NavController) {
                         text = "Métodos de Pago Guardados",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = if (isDarkTheme) Color.White else Color.Black
                     )
                 }
                 // Text("Métodos de Pago Guardados", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(12.dp))
                 if (savedMethods.isEmpty()) {
-                    Text("No hay métodos guardados.", fontSize = 14.sp, color = Color.Gray)
+                    Text(
+                        "No hay métodos guardados.",
+                        fontSize = 14.sp,
+                        color = if (isDarkTheme) Color(0xFFAAAAAA) else Color.Gray
+                    )
                 } else {
                     savedMethods.forEachIndexed { index, method ->
                         Row(
@@ -179,7 +191,8 @@ fun PaymentScreen(navController: NavController) {
                                     else -> type
                                 },
                                 modifier = Modifier.weight(1f),
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                color = if (isDarkTheme) Color.White else Color.Black
                             )
                             IconButton(onClick = {
                                 editingIndex = index
@@ -255,11 +268,16 @@ fun PaymentScreen(navController: NavController) {
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(modifier = Modifier.fillMaxWidth(), color = Color(0xFFEEEEEE))
+                Divider(modifier = Modifier.fillMaxWidth(), color = if (isDarkTheme) Color(0xFF444444) else Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // New Payment Method Section
-                Text("Pagar con Nuevo Método", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "Pagar con Nuevo Método",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isDarkTheme) Color.White else Color.Black
+                )
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Visa", "Yape").forEach { method ->
@@ -299,7 +317,7 @@ fun PaymentScreen(navController: NavController) {
                         OutlinedTextField(
                             value = newCardNumber,
                             onValueChange = { newCardNumber = it },
-                            label = { Text("Card Number") },
+                            label = { Text("Card Number", color = if (isDarkTheme) Color.White else Color.Black) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
@@ -307,36 +325,63 @@ fun PaymentScreen(navController: NavController) {
                                     imageVector = Icons.Filled.CreditCard,
                                     contentDescription = "Credit Card"
                                 )
-                            }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                         )
                         OutlinedTextField(
                             value = newCardHolder,
                             onValueChange = { newCardHolder = it },
-                            label = { Text("Card Holder Name") },
+                            label = { Text("Card Holder Name", color = if (isDarkTheme) Color.White else Color.Black) },
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Person,
                                     contentDescription = "Card Holder"
                                 )
-                            }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                         )
                         OutlinedTextField(
                             value = newExpiryDate,
                             onValueChange = { newExpiryDate = it },
-                            label = { Text("Expiry Date (MM/YY)") },
+                            label = { Text("Expiry Date (MM/YY)", color = if (isDarkTheme) Color.White else Color.Black) },
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.DateRange,
                                     contentDescription = "Expiry Date"
                                 )
-                            }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                         )
                         OutlinedTextField(
                             value = newCvv,
                             onValueChange = { newCvv = it },
-                            label = { Text("CVV") },
+                            label = { Text("CVV", color = if (isDarkTheme) Color.White else Color.Black) },
                             visualTransformation = PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
@@ -345,14 +390,23 @@ fun PaymentScreen(navController: NavController) {
                                     imageVector = Icons.Filled.Lock,
                                     contentDescription = "CVV"
                                 )
-                            }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                         )
                     }
                     "Yape" -> {
                         OutlinedTextField(
                             value = newPhoneNumber,
                             onValueChange = { newPhoneNumber = it },
-                            label = { Text("Phone Number") },
+                            label = { Text("Phone Number", color = if (isDarkTheme) Color.White else Color.Black) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
@@ -360,7 +414,16 @@ fun PaymentScreen(navController: NavController) {
                                     imageVector = Icons.Filled.PhoneAndroid,
                                     contentDescription = "Phone"
                                 )
-                            }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                         )
                         // Approval code field REMOVED from here (moved to active payment section)
                     }
@@ -438,20 +501,29 @@ fun PaymentScreen(navController: NavController) {
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                Divider(modifier = Modifier.fillMaxWidth(), color = Color(0xFFEEEEEE))
+                Divider(modifier = Modifier.fillMaxWidth(), color = if (isDarkTheme) Color(0xFF444444) else Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(24.dp))
                 // Pay with this method section
-                Text("Pagar con este método", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "Pagar con este método",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isDarkTheme) Color.White else Color.Black
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 if (activeMethodIndex == null || activeMethodType == null) {
-                    Text("Seleccione un método para pagar.", fontSize = 14.sp, color = Color.Gray)
+                    Text(
+                        "Seleccione un método para pagar.",
+                        fontSize = 14.sp,
+                        color = if (isDarkTheme) Color(0xFFAAAAAA) else Color.Gray
+                    )
                 } else {
                     when (activeMethodType) {
                         "Visa" -> {
                             OutlinedTextField(
                                 value = activeCardNumber,
                                 onValueChange = { activeCardNumber = it },
-                                label = { Text("Card Number") },
+                                label = { Text("Card Number", color = if (isDarkTheme) Color.White else Color.Black) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
@@ -459,36 +531,63 @@ fun PaymentScreen(navController: NavController) {
                                         imageVector = Icons.Filled.CreditCard,
                                         contentDescription = "Credit Card"
                                     )
-                                }
+                                },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                             )
                             OutlinedTextField(
                                 value = activeCardHolder,
                                 onValueChange = { activeCardHolder = it },
-                                label = { Text("Card Holder Name") },
+                                label = { Text("Card Holder Name", color = if (isDarkTheme) Color.White else Color.Black) },
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Filled.Person,
                                         contentDescription = "Card Holder"
                                     )
-                                }
+                                },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                             )
                             OutlinedTextField(
                                 value = activeExpiryDate,
                                 onValueChange = { activeExpiryDate = it },
-                                label = { Text("Expiry Date (MM/YY)") },
+                                label = { Text("Expiry Date (MM/YY)", color = if (isDarkTheme) Color.White else Color.Black) },
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Filled.DateRange,
                                         contentDescription = "Expiry Date"
                                     )
-                                }
+                                },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                cursorColor = if (isDarkTheme) Color.White else Color.Black
+                            )
                             )
                             OutlinedTextField(
                                 value = activeCvv,
                                 onValueChange = { activeCvv = it },
-                                label = { Text("CVV") },
+                                label = { Text("CVV", color = if (isDarkTheme) Color.White else Color.Black) },
                                 visualTransformation = PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
@@ -497,14 +596,23 @@ fun PaymentScreen(navController: NavController) {
                                         imageVector = Icons.Filled.Lock,
                                         contentDescription = "CVV"
                                     )
-                                }
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                    unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                    focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                    unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                    cursorColor = if (isDarkTheme) Color.White else Color.Black
+                                )
                             )
                         }
                         "Yape" -> {
                             OutlinedTextField(
                                 value = activePhoneNumber,
                                 onValueChange = { activePhoneNumber = it },
-                                label = { Text("Phone Number") },
+                                label = { Text("Phone Number", color = if (isDarkTheme) Color.White else Color.Black) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
@@ -512,12 +620,21 @@ fun PaymentScreen(navController: NavController) {
                                         imageVector = Icons.Filled.PhoneAndroid,
                                         contentDescription = "Phone"
                                     )
-                                }
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                    unfocusedTextColor = if (isDarkTheme) Color.White else Color.DarkGray,
+                                    focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                    unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                    cursorColor = if (isDarkTheme) Color.White else Color.Black
+                                )
                             )
                             OutlinedTextField(
                                 value = activeApprovalCode,
                                 onValueChange = { activeApprovalCode = it },
-                                label = { Text("Código de Aprobación") },
+                                label = { Text("Código de Aprobación", color = if (isDarkTheme) Color.White else Color.Black) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
@@ -525,7 +642,16 @@ fun PaymentScreen(navController: NavController) {
                                         imageVector = Icons.Filled.Lock,
                                         contentDescription = "Approval Code"
                                     )
-                                }
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                    unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                    focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                    unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                    cursorColor = if (isDarkTheme) Color.White else Color.Black
+                                )
                             )
                         }
                     }
@@ -566,118 +692,130 @@ fun PaymentScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF4468FF))
+                .background(if (isDarkTheme) Color(0xFF1E1E2E) else Color(0xFF4468FF))
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
-            Box(
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomStart = 12.dp, bottomEnd = 12.dp))
+                .border(
+                    width = 1.dp,
+                    color = if (isDarkTheme) Color(0xFF444444) else Color(0xFFDDDDDD),
+                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
+                )
+        ) {
+            // Ticket body
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
+                    .background(if (isDarkTheme) Color(0xFF2C2C2E) else Color.White, shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomStart = 12.dp, bottomEnd = 12.dp))
+                    .padding(horizontal = 0.dp, vertical = 0.dp)
             ) {
-                // Ticket background with cutout circles
-                Box(
+                Spacer(modifier = Modifier.height(24.dp))
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
+                        .padding(horizontal = 24.dp, vertical = 0.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Ticket body
+                    Text(
+                        "Parking Larcomar",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = if (isDarkTheme) Color.White else Color.Black
+                    )
+                    Text(
+                        "Malecón de la Reserva, Miraflores",
+                        fontSize = 12.sp,
+                        color = if (isDarkTheme) Color(0xFFAAAAAA) else Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.White, shape = RoundedCornerShape(24.dp))
-                            .padding(horizontal = 0.dp, vertical = 0.dp)
+                            .background(if (isDarkTheme) Color(0xFF3A3A3C) else Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
                     ) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 0.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("Parking Larcomar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text("Malecón de la Reserva, Miraflores", fontSize = 12.sp, color = Color.Gray)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
-                                    .padding(16.dp)
-                            ) {
-                                Text("VEHICLE", fontSize = 12.sp, color = Color.Gray)
-                                Text("2021 Audi Q3 • B 1234 CD", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text("DURATION", fontSize = 12.sp, color = Color.Gray)
-                                Text("1 hora • 26 May. 2025", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            // Ticket slot
-                            Text("Slot A01", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            // Dotted line separator
-                            Canvas(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                            ) {
-                                drawLine(
-                                    color = Color.LightGray,
-                                    start = Offset(0f, 0f),
-                                    end = Offset(size.width, 0f),
-                                    strokeWidth = 2f,
-                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            // Barcode
-                            Image(
-                                bitmap = barcodeBitmap!!.asImageBitmap(),
-                                contentDescription = "Código de barras",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(100.dp)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("ID: $ticketCode", fontSize = 12.sp, color = Color.Gray)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { navController.navigate(Routes.Dashboard.route) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(46.dp),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4468FF))
-                            ) {
-                                Text("Navegar", fontSize = 16.sp, color = Color.White)
-                            }
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
+                        Text(
+                            "VEHICLE",
+                            fontSize = 12.sp,
+                            color = if (isDarkTheme) Color(0xFFAAAAAA) else Color.Gray
+                        )
+                        Text(
+                            "2021 Audi Q3 • B 1234 CD",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isDarkTheme) Color.White else Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            "DURATION",
+                            fontSize = 12.sp,
+                            color = if (isDarkTheme) Color(0xFFAAAAAA) else Color.Gray
+                        )
+                        Text(
+                            "1 hora • 26 May. 2025",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isDarkTheme) Color.White else Color.Black
+                        )
                     }
-                    // Left and right circle cutouts (decorative)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    // Ticket slot
+                    Text(
+                        "Slot A01",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = if (isDarkTheme) Color.White else Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // Dotted line separator
                     Canvas(
                         modifier = Modifier
-                            .matchParentSize()
+                            .fillMaxWidth()
+                            .height(1.dp)
                     ) {
-                        val radius = 28.dp.toPx()
-                        val centerLeft = Offset(0f, size.height / 2)
-                        val centerRight = Offset(size.width, size.height / 2)
-                        // Draw left circle (cutout)
-                        drawCircle(
-                            color = Color(0xFF4468FF),
-                            radius = radius,
-                            center = centerLeft,
-                            style = Fill
-                        )
-                        // Draw right circle (cutout)
-                        drawCircle(
-                            color = Color(0xFF4468FF),
-                            radius = radius,
-                            center = centerRight,
-                            style = Fill
+                        drawLine(
+                            color = if (isDarkTheme) Color.DarkGray else Color.LightGray,
+                            start = Offset(0f, 0f),
+                            end = Offset(size.width, 0f),
+                            strokeWidth = 2f,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f)
                         )
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // Barcode
+                    Image(
+                        bitmap = barcodeBitmap!!.asImageBitmap(),
+                        contentDescription = "Código de barras",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "ID: $ticketCode",
+                        fontSize = 12.sp,
+                        color = if (isDarkTheme) Color(0xFFAAAAAA) else Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { navController.navigate(Routes.Dashboard.route) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4468FF))
+                    ) {
+                        Text("Navegar", fontSize = 16.sp, color = Color.White)
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
+        }
         }
     }
 }

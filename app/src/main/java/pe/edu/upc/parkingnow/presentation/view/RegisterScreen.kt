@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 import pe.edu.upc.parkingnow.R
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -39,7 +40,11 @@ import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
+fun RegisterScreen(
+    navController: NavController,
+    userViewModel: UserViewModel,
+    appViewModel: AppViewModel
+) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -50,6 +55,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
+    val isDarkTheme by appViewModel.isDarkMode.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Background image with overlay gradient
@@ -65,12 +71,18 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.7f),
-                            Color.White.copy(alpha = 0.85f)
+                    brush = if (isDarkTheme) {
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFF121212), Color(0xFF121212))
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.7f),
+                                Color.White.copy(alpha = 0.85f)
+                            )
+                        )
+                    }
                 )
         )
 
@@ -96,7 +108,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color(0xFF4285F4),
+                        tint = if (isDarkTheme) Color.White else Color(0xFF4285F4),
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -106,7 +118,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                     text = "Crear Cuenta",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B),
+                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B),
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -116,7 +128,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.9f)
+                    containerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White.copy(alpha = 0.9f)
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 8.dp
@@ -133,7 +145,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                         text = "Información Personal",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4285F4)
+                        color = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                     )
 
                     // Name field
@@ -145,21 +157,21 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                             Icon(
                                 Icons.Default.Person,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            focusedBorderColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            focusedLabelColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedLabelColor = if (isDarkTheme) Color.LightGray else Color.Gray
                         ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
@@ -174,34 +186,34 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                             Icon(
                                 Icons.Default.Email,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            focusedBorderColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            focusedLabelColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedLabelColor = if (isDarkTheme) Color.LightGray else Color.Gray
                         ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
-                    Divider(color = Color.Gray.copy(alpha = 0.2f))
+                    Divider(color = if (isDarkTheme) Color.LightGray.copy(alpha = 0.2f) else Color.Gray.copy(alpha = 0.2f))
 
                     // Security section header
                     Text(
                         text = "Seguridad",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4285F4)
+                        color = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                     )
 
                     // Password field
@@ -213,7 +225,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                             Icon(
                                 Icons.Default.Lock,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                             )
                         },
                         trailingIcon = {
@@ -221,7 +233,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                                 Icon(
                                     if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                     contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                                    tint = Color(0xFF4285F4)
+                                    tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                                 )
                             }
                         },
@@ -230,14 +242,14 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            focusedBorderColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            focusedLabelColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedLabelColor = if (isDarkTheme) Color.LightGray else Color.Gray
                         ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
@@ -252,7 +264,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                             Icon(
                                 Icons.Default.Lock,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                             )
                         },
                         trailingIcon = {
@@ -260,7 +272,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                                 Icon(
                                     if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                     contentDescription = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                                    tint = Color(0xFF4285F4)
+                                    tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                                 )
                             }
                         },
@@ -269,27 +281,27 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            focusedBorderColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            focusedLabelColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedLabelColor = if (isDarkTheme) Color.LightGray else Color.Gray
                         ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
-                    Divider(color = Color.Gray.copy(alpha = 0.2f))
+                    Divider(color = if (isDarkTheme) Color.LightGray.copy(alpha = 0.2f) else Color.Gray.copy(alpha = 0.2f))
 
                     // Vehicle information section header
                     Text(
                         text = "Información del Vehículo",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4285F4)
+                        color = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                     )
 
                     // Vehicle plate field
@@ -301,21 +313,21 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                             Icon(
                                 Icons.Outlined.DirectionsCar,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            focusedBorderColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            focusedLabelColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedLabelColor = if (isDarkTheme) Color.LightGray else Color.Gray
                         ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
@@ -330,21 +342,21 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                             Icon(
                                 Icons.Outlined.Badge,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = if (isDarkTheme) Color.White else Color(0xFF4285F4)
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF23272F) else Color.White,
+                            focusedBorderColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                            focusedLabelColor = if (isDarkTheme) Color.White else Color(0xFF4285F4),
+                            unfocusedLabelColor = if (isDarkTheme) Color.LightGray else Color.Gray
                         ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
@@ -358,7 +370,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
             Text(
                 text = "Al registrarte, aceptas nuestros Términos y Condiciones y nuestra Política de Privacidad",
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = if (isDarkTheme) Color.LightGray else Color.Gray,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
@@ -388,7 +400,8 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4285F4)
+                    containerColor = if (isDarkTheme) Color(0xFFE0E0E0) else Color(0xFF4285F4),
+                    contentColor = if (isDarkTheme) Color.Black else Color.White
                 ),
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 4.dp
@@ -397,8 +410,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                 Text(
                     text = "Crear Cuenta",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -411,7 +423,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                 Text(
                     text = "¿Ya tienes una cuenta? Inicia sesión",
                     fontSize = 14.sp,
-                    color = Color(0xFF4285F4),
+                    color = if (isDarkTheme) Color.White else Color(0xFF4285F4),
                     fontWeight = FontWeight.Medium
                 )
             }

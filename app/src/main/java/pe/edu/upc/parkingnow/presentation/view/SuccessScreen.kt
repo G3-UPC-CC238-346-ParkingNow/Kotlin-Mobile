@@ -1,6 +1,6 @@
+package pe.edu.upc.parkingnow.presentation.view
+
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
-
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -16,10 +16,12 @@ import androidx.navigation.NavController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 @Composable
-fun SuccessScreen(navController: NavController) {
+fun SuccessScreen(navController: NavController, appViewModel: AppViewModel) {
+    val isDarkMode by appViewModel.isDarkMode.collectAsState(initial = false)
+
     LaunchedEffect(true) {
         delay(3000)
         navController.navigate(Routes.Dashboard.route)
@@ -28,7 +30,7 @@ fun SuccessScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFEEF3FF)),
+            .background(if (isDarkMode) Color(0xFF121212) else Color(0xFFEEF3FF)),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -40,9 +42,18 @@ fun SuccessScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Success!", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+            Text(
+                "Success!",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isDarkMode) Color.White else Color(0xFF1A1A1A)
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Yey, 1 parking slot\nalready booked for you.", fontSize = 14.sp, color = Color(0xFF444444))
+            Text(
+                "Yey, 1 parking slot\nalready booked for you.",
+                fontSize = 14.sp,
+                color = if (isDarkMode) Color.LightGray else Color(0xFF444444)
+            )
         }
     }
 }
