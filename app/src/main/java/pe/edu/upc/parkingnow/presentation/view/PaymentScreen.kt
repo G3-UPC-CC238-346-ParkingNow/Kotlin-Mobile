@@ -41,9 +41,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -66,12 +68,12 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
     var selectedNewMethod by remember { mutableStateOf("Visa") }
 
     // New method input fields
-    var newCardNumber by remember { mutableStateOf("") }
-    var newCardHolder by remember { mutableStateOf("") }
-    var newExpiryDate by remember { mutableStateOf("") }
-    var newCvv by remember { mutableStateOf("") }
-    var newPhoneNumber by remember { mutableStateOf("") }
-    var newApprovalCode by remember { mutableStateOf("") }
+    var newCardNumber by remember { mutableStateOf(TextFieldValue("")) }
+    var newCardHolder by remember { mutableStateOf(TextFieldValue("")) }
+    var newExpiryDate by remember { mutableStateOf(TextFieldValue("")) }
+    var newCvv by remember { mutableStateOf(TextFieldValue("")) }
+    var newPhoneNumber by remember { mutableStateOf(TextFieldValue("")) }
+    var newApprovalCode by remember { mutableStateOf(TextFieldValue("")) }
 
     // Approval code for active Yape payment
     var activeApprovalCode by remember { mutableStateOf("") }
@@ -103,11 +105,12 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
     }
 
     fun clearNewMethodFields() {
-        newCardNumber = ""
-        newCardHolder = ""
-        newExpiryDate = ""
-        newCvv = ""
-        newPhoneNumber = ""
+        newCardNumber = TextFieldValue("")
+        newCardHolder = TextFieldValue("")
+        newExpiryDate = TextFieldValue("")
+        newCvv = TextFieldValue("")
+        newPhoneNumber = TextFieldValue("")
+        newApprovalCode = TextFieldValue("")
         selectedNewMethod = "Visa"
         editingIndex = null
     }
@@ -117,18 +120,17 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(if (isDarkTheme) Color(0xFF1C1C1E) else Color(0xFFEFF3FF))
-                .padding(16.dp)
+                .padding(top = 8.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .background(if (isDarkTheme) Color(0xFF2C2C2E) else Color.White, shape = RoundedCornerShape(16.dp))
-                    .padding(24.dp)
-                    .fillMaxWidth(0.9f)
+                    .padding(horizontal = 24.dp, vertical = 40.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 // Back arrow and title row
                 Row(
                     modifier = Modifier
@@ -199,18 +201,18 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                                 val m = savedMethods[index]
                                 selectedNewMethod = m["type"] ?: "Visa"
                                 if (selectedNewMethod == "Visa") {
-                                    newCardNumber = m["cardNumber"] ?: ""
-                                    newCardHolder = m["cardHolder"] ?: ""
-                                    newExpiryDate = m["expiryDate"] ?: ""
-                                    newCvv = m["cvv"] ?: ""
-                                    newPhoneNumber = ""
-                                } else {
-                                    newPhoneNumber = m["phoneNumber"] ?: ""
-                                    newCardNumber = ""
-                                    newCardHolder = ""
-                                    newExpiryDate = ""
-                                    newCvv = ""
-                                }
+                                    newCardNumber = TextFieldValue(m["cardNumber"] ?: "", TextRange((m["cardNumber"] ?: "").length))
+                                newCardHolder = TextFieldValue(m["cardHolder"] ?: "", TextRange((m["cardHolder"] ?: "").length))
+                                newExpiryDate = TextFieldValue(m["expiryDate"] ?: "", TextRange((m["expiryDate"] ?: "").length))
+                                newCvv = TextFieldValue(m["cvv"] ?: "", TextRange((m["cvv"] ?: "").length))
+                                newPhoneNumber = TextFieldValue("")
+                            } else {
+                                newPhoneNumber = TextFieldValue(m["phoneNumber"] ?: "", TextRange((m["phoneNumber"] ?: "").length))
+                                newCardNumber = TextFieldValue("")
+                                newCardHolder = TextFieldValue("")
+                                newExpiryDate = TextFieldValue("")
+                                newCvv = TextFieldValue("")
+                            }
                             }) {
                                 Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar método")
                             }
@@ -316,7 +318,17 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                     "Visa" -> {
                         OutlinedTextField(
                             value = newCardNumber,
-                            onValueChange = { newCardNumber = it },
+                            onValueChange = { newValue ->
+                                val digits = newValue.text.filter { it.isDigit() }.take(16)
+                                val formatted = buildString {
+                                    digits.forEachIndexed { index, c ->
+                                        append(c)
+                                        if ((index + 1) % 4 == 0 && index != 15) append(" ")
+                                    }
+                                }
+                                val cursorPosition = formatted.length
+                                newCardNumber = TextFieldValue(formatted, TextRange(cursorPosition))
+                            },
                             label = { Text("Card Number", color = if (isDarkTheme) Color.White else Color.Black) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
@@ -340,6 +352,7 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                             value = newCardHolder,
                             onValueChange = { newCardHolder = it },
                             label = { Text("Card Holder Name", color = if (isDarkTheme) Color.White else Color.Black) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
@@ -359,8 +372,19 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                         )
                         OutlinedTextField(
                             value = newExpiryDate,
-                            onValueChange = { newExpiryDate = it },
+                            onValueChange = { newValue ->
+                                val digits = newValue.text.filter { it.isDigit() }.take(4)
+                                val formatted = buildString {
+                                    digits.forEachIndexed { index, c ->
+                                        append(c)
+                                        if (index == 1 && digits.length > 2) append("/")
+                                    }
+                                }
+                                val cursorPosition = formatted.length
+                                newExpiryDate = TextFieldValue(formatted, TextRange(cursorPosition))
+                            },
                             label = { Text("Expiry Date (MM/YY)", color = if (isDarkTheme) Color.White else Color.Black) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
@@ -407,7 +431,7 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                             value = newPhoneNumber,
                             onValueChange = { newPhoneNumber = it },
                             label = { Text("Phone Number", color = if (isDarkTheme) Color.White else Color.Black) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
@@ -433,21 +457,21 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                 Button(
                     onClick = {
                         val isVisaValid = selectedNewMethod == "Visa" &&
-                                newCardNumber.isNotBlank() && newCardHolder.isNotBlank() && newExpiryDate.isNotBlank() && newCvv.isNotBlank()
+                                newCardNumber.text.isNotBlank() && newCardHolder.text.isNotBlank() && newExpiryDate.text.isNotBlank() && newCvv.text.isNotBlank()
 
                         val isOtherValid = selectedNewMethod == "Yape" &&
-                                newPhoneNumber.isNotBlank()
+                                newPhoneNumber.text.isNotBlank()
 
                         if (isVisaValid || isOtherValid) {
                             val newMethodMap = mutableMapOf<String, String>()
                             newMethodMap["type"] = selectedNewMethod
                             if (selectedNewMethod == "Visa") {
-                                newMethodMap["cardNumber"] = newCardNumber
-                                newMethodMap["cardHolder"] = newCardHolder
-                                newMethodMap["expiryDate"] = newExpiryDate
-                                newMethodMap["cvv"] = newCvv
+                                newMethodMap["cardNumber"] = newCardNumber.text
+                                newMethodMap["cardHolder"] = newCardHolder.text
+                                newMethodMap["expiryDate"] = newExpiryDate.text
+                                newMethodMap["cvv"] = newCvv.text
                             } else {
-                                newMethodMap["phoneNumber"] = newPhoneNumber
+                                newMethodMap["phoneNumber"] = newPhoneNumber.text
                                 // No approval code stored at save time for Yape
                             }
                             if (editingIndex != null) {
@@ -455,13 +479,13 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                                 activeMethodIndex = editingIndex
                                 activeMethodType = selectedNewMethod
                                 if (selectedNewMethod == "Visa") {
-                                    activeCardNumber = newCardNumber
-                                    activeCardHolder = newCardHolder
-                                    activeExpiryDate = newExpiryDate
-                                    activeCvv = newCvv
+                                    activeCardNumber = newCardNumber.text
+                                    activeCardHolder = newCardHolder.text
+                                    activeExpiryDate = newExpiryDate.text
+                                    activeCvv = newCvv.text
                                     activePhoneNumber = ""
                                 } else {
-                                    activePhoneNumber = newPhoneNumber
+                                    activePhoneNumber = newPhoneNumber.text
                                     activeCardNumber = ""
                                     activeCardHolder = ""
                                     activeExpiryDate = ""
@@ -473,13 +497,13 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                                 activeMethodIndex = savedMethods.size - 1
                                 activeMethodType = selectedNewMethod
                                 if (selectedNewMethod == "Visa") {
-                                    activeCardNumber = newCardNumber
-                                    activeCardHolder = newCardHolder
-                                    activeExpiryDate = newExpiryDate
-                                    activeCvv = newCvv
+                                    activeCardNumber = newCardNumber.text
+                                    activeCardHolder = newCardHolder.text
+                                    activeExpiryDate = newExpiryDate.text
+                                    activeCvv = newCvv.text
                                     activePhoneNumber = ""
                                 } else {
-                                    activePhoneNumber = newPhoneNumber
+                                    activePhoneNumber = newPhoneNumber.text
                                     activeCardNumber = ""
                                     activeCardHolder = ""
                                     activeExpiryDate = ""
@@ -520,18 +544,27 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                 } else {
                     when (activeMethodType) {
                         "Visa" -> {
-                            OutlinedTextField(
-                                value = activeCardNumber,
-                                onValueChange = { activeCardNumber = it },
-                                label = { Text("Card Number", color = if (isDarkTheme) Color.White else Color.Black) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.fillMaxWidth(),
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Filled.CreditCard,
-                                        contentDescription = "Credit Card"
-                                    )
-                                },
+                        OutlinedTextField(
+                            value = activeCardNumber,
+                            onValueChange = { input ->
+                                val digits = input.filter { it.isDigit() }.take(16)
+                                val formatted = buildString {
+                                    digits.forEachIndexed { index, c ->
+                                        append(c)
+                                        if ((index + 1) % 4 == 0 && index != 15) append(" ")
+                                    }
+                                }
+                                activeCardNumber = formatted
+                            },
+                            label = { Text("Card Number", color = if (isDarkTheme) Color.White else Color.Black) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth(),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.CreditCard,
+                                    contentDescription = "Credit Card"
+                                )
+                            },
                             colors = TextFieldDefaults.colors(
                                 focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
                                 unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
@@ -541,11 +574,12 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                                 unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
                                 cursorColor = if (isDarkTheme) Color.White else Color.Black
                             )
-                            )
+                        )
                             OutlinedTextField(
                                 value = activeCardHolder,
                                 onValueChange = { activeCardHolder = it },
                                 label = { Text("Card Holder Name", color = if (isDarkTheme) Color.White else Color.Black) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(
@@ -553,20 +587,28 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                                         contentDescription = "Card Holder"
                                     )
                                 },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
-                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
-                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
-                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
-                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
-                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
-                                cursorColor = if (isDarkTheme) Color.White else Color.Black
-                            )
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                    unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                    focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                    unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                    cursorColor = if (isDarkTheme) Color.White else Color.Black
+                                )
                             )
                             OutlinedTextField(
                                 value = activeExpiryDate,
-                                onValueChange = { activeExpiryDate = it },
+                                onValueChange = { input ->
+                                    val digits = input.filter { it.isDigit() }.take(4)
+                                    val formatted = when {
+                                        digits.length <= 2 -> digits
+                                        else -> digits.substring(0, 2) + "/" + digits.substring(2)
+                                    }
+                                    activeExpiryDate = formatted
+                                },
                                 label = { Text("Expiry Date (MM/YY)", color = if (isDarkTheme) Color.White else Color.Black) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(
@@ -574,15 +616,15 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                                         contentDescription = "Expiry Date"
                                     )
                                 },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
-                                unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
-                                focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
-                                unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
-                                focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
-                                unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
-                                cursorColor = if (isDarkTheme) Color.White else Color.Black
-                            )
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
+                                    unfocusedTextColor = if (isDarkTheme) Color.Black else Color.DarkGray,
+                                    focusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    unfocusedContainerColor = if (isDarkTheme) Color(0xFF3A3A3C) else Color.Transparent,
+                                    focusedLabelColor = if (isDarkTheme) Color(0xFFBBBBBB) else Color.Gray,
+                                    unfocusedLabelColor = if (isDarkTheme) Color(0xFF999999) else Color.Gray,
+                                    cursorColor = if (isDarkTheme) Color.White else Color.Black
+                                )
                             )
                             OutlinedTextField(
                                 value = activeCvv,
@@ -613,7 +655,7 @@ fun PaymentScreen(navController: NavController, appViewModel: AppViewModel) {
                                 value = activePhoneNumber,
                                 onValueChange = { activePhoneNumber = it },
                                 label = { Text("Phone Number", color = if (isDarkTheme) Color.White else Color.Black) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(

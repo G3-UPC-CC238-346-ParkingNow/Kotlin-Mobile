@@ -1,7 +1,6 @@
 package pe.edu.upc.parkingnow.presentation.view
 
 import pe.edu.upc.parkingnow.R
-
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 
 import androidx.compose.foundation.Image
@@ -10,13 +9,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,137 +30,182 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import pe.edu.upc.parkingnow.presentation.navigation.Routes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val isDarkTheme by appViewModel.isDarkMode.collectAsState()
+    val scrollState = rememberScrollState()
+
+    val backgroundColor = if (isDarkTheme)
+        Color(0xFF121212)
+    else
+        Color(0xFFF5F9FF)
+
+    val cardColor = if (isDarkTheme)
+        Color(0xFF1E1E1E)
+    else
+        Color.White
+
+    val textColor = if (isDarkTheme)
+        Color.White
+    else
+        Color(0xFF1E293B)
+
+    val secondaryTextColor = if (isDarkTheme)
+        Color.LightGray
+    else
+        Color.Gray
+
+    val accentColor = Color(0xFF4285F4)
 
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
     ) {
-        // Semi-transparent overlay for better text readability
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = if (isDarkTheme) {
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0xFF121212),
-                                Color(0xFF121212)
-                            )
-                        )
-                    } else {
+        // Background image with overlay gradient (only in light mode)
+        if (!isDarkTheme) {
+            Image(
+                painter = painterResource(id = R.drawable.login_background),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            // Semi-transparent overlay for better text readability
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.White.copy(alpha = 0.7f),
                                 Color.White.copy(alpha = 0.85f)
                             )
                         )
-                    }
-                )
-        )
+                    )
+            )
+        }
 
-        // Main content
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .verticalScroll(scrollState)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top section with app logo
+            // Top section with enhanced branding
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(top = 48.dp)
             ) {
-                // App logo/icon
+                // Enhanced app logo with animation-ready design
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(20.dp))
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(24.dp))
                         .background(
                             Brush.linearGradient(
                                 colors = listOf(
-                                    Color(0xFF4285F4),
+                                    accentColor,
                                     Color(0xFF1976D2)
                                 )
                             )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "P",
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                    Icon(
+                        imageVector = Icons.Default.LocalParking,
+                        contentDescription = "ParkingNow Logo",
+                        tint = Color.White,
+                        modifier = Modifier.size(48.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
                     text = "ParkingNow",
-                    fontSize = 24.sp,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1565C0)
+                    color = accentColor
                 )
 
                 Text(
                     text = "Encuentra el mejor estacionamiento",
-                    fontSize = 14.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
+                    fontSize = 16.sp,
+                    color = secondaryTextColor,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            // Middle section with login form
+            // Enhanced login form
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(vertical = 24.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
+                    containerColor = cardColor
                 ),
                 elevation = CardDefaults.cardElevation(
-                    defaultElevation = 8.dp
-                ),
-                border = if (!isDarkTheme) BorderStroke(1.dp, Color.Black) else null
+                    defaultElevation = 12.dp
+                )
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "¡Bienvenido de vuelta! 👋",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF1565C0),
-                        textAlign = TextAlign.Center
-                    )
+                    // Welcome header with icon
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(accentColor.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = accentColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
 
-                    Text(
-                        text = "Inicia sesión en tu cuenta",
-                        fontSize = 16.sp,
-                        color = if (isDarkTheme) Color(0xFFB0BEC5) else Color.Gray,
-                        textAlign = TextAlign.Center
-                    )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "¡Bienvenido de vuelta!",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor
+                            )
+                            Text(
+                                text = "Inicia sesión en tu cuenta",
+                                fontSize = 14.sp,
+                                color = secondaryTextColor
+                            )
+                        }
+                    }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                    // Email field
+                    // Enhanced email field
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -170,27 +214,27 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                             Icon(
                                 Icons.Default.Email,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = accentColor
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
-                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
-                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2E) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2E) else Color.White,
+                            focusedBorderColor = accentColor,
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = textColor,
+                            unfocusedTextColor = textColor,
+                            focusedLabelColor = accentColor,
+                            unfocusedLabelColor = secondaryTextColor
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Password field
+                    // Enhanced password field
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -199,7 +243,7 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                             Icon(
                                 Icons.Default.Lock,
                                 contentDescription = null,
-                                tint = Color(0xFF4285F4)
+                                tint = accentColor
                             )
                         },
                         trailingIcon = {
@@ -207,7 +251,7 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                                 Icon(
                                     if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                     contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                                    tint = Color(0xFF4285F4)
+                                    tint = accentColor
                                 )
                             }
                         },
@@ -216,42 +260,51 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
-                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2C) else Color.White,
-                            focusedBorderColor = Color(0xFF4285F4),
-                            unfocusedBorderColor = Color(0xFFBDBDBD),
-                            focusedTextColor = if (isDarkTheme) Color.White else Color.Black,
-                            unfocusedTextColor = if (isDarkTheme) Color.White else Color.Black,
-                            focusedLabelColor = Color(0xFF4285F4),
-                            unfocusedLabelColor = Color.Gray
+                            focusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2E) else Color.White,
+                            unfocusedContainerColor = if (isDarkTheme) Color(0xFF2C2C2E) else Color.White,
+                            focusedBorderColor = accentColor,
+                            unfocusedBorderColor = if (isDarkTheme) Color.LightGray else Color(0xFFBDBDBD),
+                            focusedTextColor = textColor,
+                            unfocusedTextColor = textColor,
+                            focusedLabelColor = accentColor,
+                            unfocusedLabelColor = secondaryTextColor
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    // Forgot password link
-                    TextButton(
-                        onClick = {
-                            navController.navigate(Routes.ForgotPassword.route)
-                        },
-                        modifier = Modifier.align(Alignment.End)
+                    // Enhanced forgot password link
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        Text(
-                            text = "¿Olvidaste tu contraseña?",
-                            fontSize = 14.sp,
-                            color = Color(0xFF4285F4),
-                            fontWeight = FontWeight.Medium
-                        )
+                        TextButton(
+                            onClick = { navController.navigate(Routes.ForgotPassword.route) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Help,
+                                contentDescription = null,
+                                tint = accentColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "¿Olvidaste tu contraseña?",
+                                fontSize = 14.sp,
+                                color = accentColor,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Login button
+                    // Enhanced login button
+                    val isFormValid = email.isNotBlank() && password.isNotBlank()
+
                     Button(
                         onClick = {
-                            // Navigate to Dashboard on successful login
                             navController.navigate(Routes.Dashboard.route) {
-                                // Clear the back stack so user can't go back to login
                                 popUpTo(Routes.Login.route) { inclusive = true }
                             }
                         },
@@ -260,74 +313,166 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                             .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4285F4)
+                            containerColor = if (isFormValid) accentColor else secondaryTextColor,
+                            contentColor = Color.White
                         ),
                         elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 4.dp
-                        )
+                            defaultElevation = if (isFormValid) 8.dp else 2.dp
+                        ),
+                        enabled = isFormValid
                     ) {
-                        Text(
-                            "Iniciar Sesión",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Login,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Iniciar Sesión",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    // Or divider
+                    // Enhanced divider
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Divider(
                             modifier = Modifier.weight(1f),
-                            color = Color.Gray.copy(alpha = 0.5f)
+                            color = secondaryTextColor.copy(alpha = 0.3f)
                         )
-                        Text(
-                            text = "  O  ",
-                            color = Color.Gray,
-                            fontSize = 14.sp
-                        )
+                        Card(
+                            shape = CircleShape,
+                            colors = CardDefaults.cardColors(
+                                containerColor = cardColor
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Text(
+                                text = "O",
+                                color = secondaryTextColor,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
                         Divider(
                             modifier = Modifier.weight(1f),
-                            color = Color.Gray.copy(alpha = 0.5f)
+                            color = secondaryTextColor.copy(alpha = 0.3f)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    // Register button
+                    // Enhanced register button
                     OutlinedButton(
-                        onClick = {
-                            navController.navigate(Routes.Register.route)
-                        },
+                        onClick = { navController.navigate(Routes.Register.route) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(1.dp, Color(0xFF4285F4)),
+                        border = BorderStroke(2.dp, accentColor),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFF4285F4)
+                            contentColor = accentColor
                         )
                     ) {
-                        Text(
-                            "Crear una cuenta",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PersonAdd,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Crear una cuenta",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
                 }
             }
 
-            // Bottom section with copyright
-            Text(
-                text = "© 2025 ParkingNow. Todos los derechos reservados.",
-                color = Color.Gray,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            // Enhanced footer with additional options
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Quick access buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    TextButton(
+                        onClick = {
+                            navController.navigate(Routes.Dashboard.route) {
+                                popUpTo(Routes.Login.route) { inclusive = true }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.VisibilityOff,
+                            contentDescription = null,
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            "Modo invitado",
+                            fontSize = 12.sp,
+                            color = secondaryTextColor
+                        )
+                    }
+
+                    TextButton(
+                        onClick = { /* Help */ }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Help,
+                            contentDescription = null,
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            "Ayuda",
+                            fontSize = 12.sp,
+                            color = secondaryTextColor
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Copyright with enhanced styling
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = cardColor.copy(alpha = 0.5f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Text(
+                        text = "© 2025 ParkingNow. Todos los derechos reservados.",
+                        color = secondaryTextColor,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+            }
         }
     }
 }

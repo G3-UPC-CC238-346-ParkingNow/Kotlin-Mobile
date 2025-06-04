@@ -65,8 +65,11 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
     val isDarkTheme = appViewModel.isDarkMode.collectAsState().value
     val context = LocalContext.current
     Configuration.getInstance().load(context.applicationContext, context.getSharedPreferences("osmdroid", 0))
+    val sharedPreferences = context.getSharedPreferences("parkingnow_prefs", android.content.Context.MODE_PRIVATE)
+    val hasAcceptedTerms = sharedPreferences.getBoolean("accepted_terms", false)
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var showTermsDialog by remember { mutableStateOf(!hasAcceptedTerms) }
 
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var hasLocationPermission by remember {
@@ -83,14 +86,20 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
     val country = remember { mutableStateOf("") }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        hasLocationPermission = isGranted
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        hasLocationPermission = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
 
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) {
-            locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
         }
     }
 
@@ -109,6 +118,37 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                 Color(0xFFF5F9FF),
                 Color.White
             )
+        )
+    }
+
+    if (showTermsDialog) {
+        AlertDialog(
+            onDismissRequest = { },
+            confirmButton = {
+                TextButton(onClick = {
+                    sharedPreferences.edit().putBoolean("accepted_terms", true).apply()
+                    showTermsDialog = false
+                }) {
+                    Text("Aceptar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTermsDialog = false }) {
+                    Text("Rechazar")
+                }
+            },
+            title = {
+                Text(text = "Términos y Condiciones", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(
+                    text = "Al usar esta aplicación, aceptas los términos y condiciones. Tu ubicación será utilizada para mostrar estacionamientos cercanos y mejorar tu experiencia."
+                )
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 
@@ -224,6 +264,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                         .fillMaxWidth()
                         .padding(16.dp)
                         .clickable {
+                            sharedPreferences.edit().remove("accepted_terms").apply()
                             Toast.makeText(context, "Se cerró la sesión exitosamente", Toast.LENGTH_SHORT).show()
                             navController.navigate(Routes.Login.route)
                         },
@@ -480,11 +521,19 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
 
                                         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx)
                                         val locationRequest = LocationRequest.create().apply {
-                                            interval = 10000
-                                            fastestInterval = 5000
-                                            priority = com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
-                                            numUpdates = 1
+                                            interval = 5000
+                                            fastestInterval = 2000
+                                            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                                            numUpdates = 3
                                         }
+
+                                        val settingsClient = LocationServices.getSettingsClient(ctx)
+                                        val builder = com.google.android.gms.location.LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+
+                                        settingsClient.checkLocationSettings(builder.build())
+                                            .addOnFailureListener {
+                                                Toast.makeText(ctx, "Activa tu GPS para obtener ubicación en tiempo real", Toast.LENGTH_LONG).show()
+                                            }
 
                                         val locationCallback = object : LocationCallback() {
                                             override fun onLocationResult(result: LocationResult) {
@@ -507,8 +556,8 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                                                     val geocoder = Geocoder(ctx, Locale.getDefault())
                                                     val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
                                                     if (!addresses.isNullOrEmpty()) {
-                                                        district.value = addresses[0].subLocality ?: ""
-                                                        city.value = addresses[0].locality ?: addresses[0].subAdminArea ?: ""
+                                                        district.value = addresses[0].locality ?: addresses[0].subAdminArea ?: ""
+                                                        city.value = addresses[0].adminArea ?: ""
                                                         country.value = addresses[0].countryName ?: ""
                                                     }
                                                 }

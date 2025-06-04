@@ -74,6 +74,7 @@ fun TicketScreen(navController: NavController, appViewModel: AppViewModel) {
     }
 
     var selectedParking by remember { mutableStateOf("Real Plaza Salaverry") }
+    var searchQuery by remember { mutableStateOf("") }
 
     val parkingOptions = remember {
         listOf(
@@ -167,8 +168,8 @@ fun TicketScreen(navController: NavController, appViewModel: AppViewModel) {
 
                 // Search bar
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
                     placeholder = { Text("Buscar estacionamiento") },
                     leadingIcon = {
                         Icon(
@@ -220,10 +221,13 @@ fun TicketScreen(navController: NavController, appViewModel: AppViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Enhanced parking options
+                val filteredOptions = parkingOptions.filter {
+                    it.name.contains(searchQuery, ignoreCase = true)
+                }
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    parkingOptions.forEach { parking ->
+                    filteredOptions.forEach { parking ->
                         EnhancedParkingOptionCard(
                             parking = parking,
                             isSelected = selectedParking == parking.name,
@@ -572,7 +576,7 @@ private fun setupUserLocation(context: android.content.Context, map: MapView) {
                     position = userLocation
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     title = "Tu ubicación"
-                    infoWindow = null
+                    setOnMarkerClickListener { _, _ -> true } // evita crash por infoWindow nula
                 }
                 map.overlays.add(userMarker)
 

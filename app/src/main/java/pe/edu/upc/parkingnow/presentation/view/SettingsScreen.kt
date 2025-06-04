@@ -70,7 +70,7 @@ fun SettingsScreen(navController: NavController, appViewModel: AppViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { navController.navigateUp() }
+                    onClick = { navController.navigate("dashboard") }
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
