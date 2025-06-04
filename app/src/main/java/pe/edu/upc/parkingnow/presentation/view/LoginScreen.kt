@@ -129,11 +129,12 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                     .padding(vertical = 16.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
+                    containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 8.dp
-                )
+                ),
+                border = if (!isDarkTheme) BorderStroke(1.dp, Color.Black) else null
             ) {
                 Column(
                     modifier = Modifier

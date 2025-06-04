@@ -50,6 +50,17 @@ fun ChangePasswordScreen(navController: NavController, appViewModel: AppViewMode
     val hasSpecialChar = newPassword.any { "!@#$%^&*".contains(it) }
     val passwordsMatch = newPassword == confirmPassword && newPassword.isNotEmpty()
 
+    LaunchedEffect(hasMinLength, hasUpperCase, hasDigit, hasSpecialChar, passwordsMatch) {
+        if (hasMinLength && hasUpperCase && hasDigit && hasSpecialChar && passwordsMatch) {
+            showConfirmation = true
+            kotlinx.coroutines.delay(3000)
+            showConfirmation = false
+            navController.navigate("login") {
+                popUpTo("change_password") { inclusive = true }
+            }
+        }
+    }
+
     LaunchedEffect(triggerLogin) {
         if (triggerLogin) {
             kotlinx.coroutines.delay(3000)
@@ -97,19 +108,20 @@ fun ChangePasswordScreen(navController: NavController, appViewModel: AppViewMode
         if (showConfirmation) {
             Card(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(horizontal = 24.dp, vertical = 100.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                    .align(Alignment.TopStart)
+                    .padding(start = 56.dp, top = 52.dp, end = 24.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF4CAF50)
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                        .wrapContentWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -159,7 +171,7 @@ fun ChangePasswordScreen(navController: NavController, appViewModel: AppViewMode
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isDarkModeEnabled) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
+                    containerColor = if (isDarkModeEnabled) Color(0xFF1E1E1E) else Color.White
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 8.dp
@@ -352,35 +364,6 @@ fun ChangePasswordScreen(navController: NavController, appViewModel: AppViewMode
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Change password button
-                    Button(
-                        onClick = {
-                            if (hasMinLength && hasUpperCase && hasDigit && hasSpecialChar && passwordsMatch) {
-                                showWeakPasswordWarning = false
-                                showConfirmation = true
-                                triggerLogin = true
-                            } else {
-                                showWeakPasswordWarning = true
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4285F4)
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 4.dp
-                        ),
-                        enabled = hasMinLength && hasUpperCase && hasDigit && hasSpecialChar && passwordsMatch
-                    ) {
-                        Text(
-                            "Cambiar Contraseña",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
 

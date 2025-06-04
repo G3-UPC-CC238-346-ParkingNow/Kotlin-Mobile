@@ -7,6 +7,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LockReset
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +28,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.offset
 
 @Composable
 fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewModel) {
@@ -66,7 +73,7 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
             onClick = { navController.navigate(pe.edu.upc.parkingnow.presentation.navigation.Routes.Login.route) },
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 48.dp, start = 16.dp)
+                .padding(top = 72.dp, start = 16.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
@@ -76,34 +83,72 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
             )
         }
 
-        // Success snackbar
+        // Confirmation and warning messages (above main card)
         if (showConfirmation) {
             Card(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(horizontal = 24.dp, vertical = 100.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                    .padding(top = 72.dp, start = 72.dp, end = 16.dp)
+                    .fillMaxWidth()
+                    .shadow(6.dp, RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF4CAF50)
+                    containerColor = Color(0xFF66BB6A)
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Email,
+                        imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Se ha enviado un correo de recuperación",
+                        text = "¡Correo enviado!",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+        if (showEmptyWarning) {
+            Card(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 72.dp, start = 72.dp, end = 16.dp)
+                    .fillMaxWidth()
+                    .shadow(6.dp, RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFEF5350)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Correo inválido",
                         color = Color.White,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
@@ -112,41 +157,6 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
             }
         }
 
-        // Error snackbar
-        if (showEmptyWarning) {
-            Card(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(horizontal = 24.dp, vertical = 100.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFE53935)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Por favor ingresa un correo válido",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
 
         // Main content
         Column(
@@ -163,11 +173,12 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isDarkMode) Color(0xFF1E1E1E) else Color.White.copy(alpha = 0.9f)
+                    containerColor = if (isDarkMode) Color(0xFF1E1E1E) else Color.White
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 8.dp
-                )
+                ),
+                border = if (!isDarkMode) BorderStroke(1.dp, Color.Black) else null
             ) {
                 Column(
                     modifier = Modifier
@@ -209,18 +220,18 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
 
                     // Subtitle
                     Text(
-                        text = "No te preocupes, ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
+                        text = "Ingresa tu correo y te enviaremos un enlace para restablecerla",
                         fontSize = 14.sp,
                         color = if (isDarkMode) Color.LightGray else Color.Gray,
                         textAlign = TextAlign.Center,
                         lineHeight = 20.sp
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Email input
                     OutlinedTextField(
@@ -249,7 +260,7 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
 
                     // Continue button
                     Button(
@@ -273,14 +284,18 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
                             defaultElevation = 4.dp
                         )
                     ) {
-                        Text(
-                            "Enviar enlace de recuperación",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Enviar enlace de recuperación",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Back to login link
                     TextButton(
@@ -297,6 +312,8 @@ fun ForgotPasswordScreen(navController: NavController, appViewModel: AppViewMode
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Spacer(modifier = Modifier.height(48.dp))
 
