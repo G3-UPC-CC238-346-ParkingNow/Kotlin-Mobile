@@ -64,6 +64,7 @@ import androidx.compose.foundation.lazy.LazyRow
 
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import androidx.activity.compose.BackHandler
 
 data class ParkingSpot(
     val id: String,
@@ -88,6 +89,12 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
     val context = LocalContext.current
     Configuration.getInstance().load(context.applicationContext, context.getSharedPreferences("osmdroid", 0))
     val sharedPreferences = context.getSharedPreferences("parkingnow_prefs", android.content.Context.MODE_PRIVATE)
+    // Bloque para mostrar los términos una sola vez tras login, registro o modo invitado
+    val resetTerms = navController.currentBackStackEntry?.savedStateHandle?.get<Boolean>("reset_terms") ?: false
+    if (resetTerms) {
+        sharedPreferences.edit().remove("accepted_terms").apply()
+        navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", false)
+    }
     val hasAcceptedTerms = sharedPreferences.getBoolean("accepted_terms", false)
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -114,6 +121,11 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
     val district = remember { mutableStateOf("") }
     val city = remember { mutableStateOf("") }
     val country = remember { mutableStateOf("") }
+
+    // Bloquea el botón físico o gesto de retroceso en esta pantalla
+    BackHandler(enabled = true) {
+        // No hacer nada para bloquear el retroceso
+    }
 
     // Sample parking data
     val parkingSpots = remember {
@@ -214,7 +226,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
         )
     }
 
-    // Terms Dialog
+    // Terms Dialog mejorado
     if (showTermsDialog) {
         AlertDialog(
             onDismissRequest = { },
@@ -223,35 +235,30 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                     onClick = {
                         sharedPreferences.edit().putBoolean("accepted_terms", true).apply()
                         showTermsDialog = false
-                        Toast.makeText(context, "Términos aceptados", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Gracias por aceptar los términos", Toast.LENGTH_SHORT).show()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4285F4)
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D4ED8))
                 ) {
-                    Text("Aceptar", color = Color.White)
+                    Text("Acepto", color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
-                    showTermsDialog = false
-                    Toast.makeText(context, "Debes aceptar los términos para continuar", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Debes aceptar los términos para usar la app", Toast.LENGTH_LONG).show()
                 }) {
-                    Text("Rechazar", color = Color(0xFF4285F4))
+                    Text("Salir", color = Color(0xFF1D4ED8))
                 }
             },
-            title = {
-                Text(text = "Términos y Condiciones", fontWeight = FontWeight.Bold)
-            },
+            title = { Text("Términos y Condiciones", color = Color.Black, style = MaterialTheme.typography.titleLarge) },
             text = {
                 Text(
-                    text = "Al usar esta aplicación, aceptas los términos y condiciones. Tu ubicación será utilizada para mostrar estacionamientos cercanos y mejorar tu experiencia."
+                    "Para continuar utilizando ParkingNow, debes aceptar los Términos y Condiciones. Estos establecen las normas de uso de la plataforma, el manejo de tus datos y tu compromiso con la comunidad.",
+                    color = Color.DarkGray,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             },
-            shape = RoundedCornerShape(16.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = Color.White,
+            shape = RoundedCornerShape(12.dp)
         )
     }
 
@@ -415,11 +422,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
             onDismiss = { showReservationDialog = false },
             onConfirm = { duration, vehicleType ->
                 showReservationDialog = false
-                Toast.makeText(
-                    context,
-                    "Reserva confirmada en ${selectedParking!!.name} por $duration horas",
-                    Toast.LENGTH_LONG
-                ).show()
+                navController.navigate(Routes.Payment.route)
             }
         )
     }
@@ -578,11 +581,11 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
             sheetPeekHeight = 80.dp,
             sheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             sheetContent = {
-                // -- Start of moved bottom sheet Column --
+                // -- Start of bottom sheet Column --
                 Column(
                     modifier = Modifier.fillMaxHeight(0.5f)
                 ) {
-                    // Handle bar
+                    // Solo un handle bar
                     Box(
                         modifier = Modifier
                             .width(40.dp)
@@ -688,7 +691,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                         }
                     }
                 }
-                // -- End of moved bottom sheet Column --
+                // -- End of bottom sheet Column --
             },
             sheetContainerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
         ) {
@@ -765,23 +768,23 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                         },
                         modifier = Modifier.fillMaxSize()
                     )
+
                 }
 
                 // Top bar overlay
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isDarkTheme) Color(0xFF1E1E1E).copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
+                        containerColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(start = 20.dp, end = 20.dp, top = 48.dp, bottom = 24.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -845,7 +848,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                 Column(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 140.dp, end = 16.dp),
+                        .padding(top = 172.dp, end = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     FloatingActionButton(
@@ -1240,18 +1243,19 @@ fun DrawerMenuItem(
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
-                if (isDarkTheme) Color(0xFF3A3A3A) else Color(0xFFE3F2FD)
+                if (isDarkTheme) Color(0xFF2D2D2D) else Color(0xFFE3F2FD)
             } else {
                 Color.Transparent
             }
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 0.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Icon(
                 imageVector = icon,
@@ -1267,7 +1271,7 @@ fun DrawerMenuItem(
             Text(
                 text = label,
                 fontSize = 16.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                 color = if (isSelected) {
                     if (isDarkTheme) Color.White else Color(0xFF1976D2)
                 } else {
