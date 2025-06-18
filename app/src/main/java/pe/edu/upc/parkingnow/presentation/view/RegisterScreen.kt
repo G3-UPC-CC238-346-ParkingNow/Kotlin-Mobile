@@ -29,7 +29,9 @@ import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import pe.edu.upc.parkingnow.data.model.UsuarioRequest
 import pe.edu.upc.parkingnow.R
+import pe.edu.upc.parkingnow.presentation.viewmodel.RegisterViewModel
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.focus.FocusDirection
@@ -38,6 +40,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.vector.ImageVector
+import kotlin.collections.set
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +83,10 @@ fun RegisterScreen(
         Color.Gray
 
     val accentColor = Color(0xFF4285F4)
+
+    val registerViewModel: RegisterViewModel = viewModel()
+    val registerSuccess by registerViewModel.registerSuccess
+    val registerError by registerViewModel.registerError
 
     Box(
         modifier = Modifier
@@ -370,11 +378,15 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (isFormValid) {
-                            userViewModel.setUsername(name)
-                            navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
-                            navController.navigate("dashboard") {
-                                popUpTo("login") { inclusive = true }
-                            }
+                            registerViewModel.registrarUsuario(
+                                pe.edu.upc.parkingnow.data.model.UsuarioRequest(
+                                    name = name,
+                                    email = email,
+                                    password = password,
+                                    placa = plate,
+                                    dni = dni
+                                )
+                            )
                         }
                     },
                     modifier = Modifier
@@ -405,6 +417,24 @@ fun RegisterScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
+                }
+
+                LaunchedEffect(registerSuccess) {
+                    if (registerSuccess != null) {
+                        userViewModel.setUsername(name)
+                        navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
+                        navController.navigate("dashboard") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                }
+
+                if (registerError != null) {
+                    Text(
+                        text = registerError ?: "",
+                        color = Color.Red,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
