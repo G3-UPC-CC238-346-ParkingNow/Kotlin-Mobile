@@ -371,6 +371,7 @@ fun RegisterScreen(
                     onClick = {
                         if (isFormValid) {
                             userViewModel.setUsername(name)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
                             navController.navigate("dashboard") {
                                 popUpTo("login") { inclusive = true }
                             }

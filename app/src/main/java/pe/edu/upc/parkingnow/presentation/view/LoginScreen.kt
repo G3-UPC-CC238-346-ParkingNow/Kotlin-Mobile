@@ -307,6 +307,7 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                             navController.navigate(Routes.Dashboard.route) {
                                 popUpTo(Routes.Login.route) { inclusive = true }
                             }
+                            navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -420,6 +421,7 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                             navController.navigate(Routes.Dashboard.route) {
                                 popUpTo(Routes.Login.route) { inclusive = true }
                             }
+                            navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
                         }
                     ) {
                         Icon(
