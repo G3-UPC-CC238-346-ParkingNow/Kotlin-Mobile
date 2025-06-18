@@ -20,11 +20,10 @@ class RegisterViewModel : ViewModel() {
 
     fun registrarUsuario(request: UsuarioRequest) {
         viewModelScope.launch {
-            repository.registrarUsuario(
-                usuarioRequest = request,
-                onSuccess = { response -> _registerSuccess.value = response },
-                onError = { error -> _registerError.value = error.message }
-            )
+            val result = repository.registrarUsuario(request)
+            result
+                .onSuccess { response -> _registerSuccess.value = response }
+                .onFailure { error -> _registerError.value = error.message }
         }
     }
 }
