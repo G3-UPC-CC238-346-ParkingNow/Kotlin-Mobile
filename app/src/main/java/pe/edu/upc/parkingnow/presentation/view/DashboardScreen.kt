@@ -100,6 +100,16 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
     val scope = rememberCoroutineScope()
     var showTermsDialog by remember { mutableStateOf(!hasAcceptedTerms) }
 
+    // Leer usuario autenticado de SharedPreferences
+    val userName = remember { mutableStateOf("") }
+    val userEmail = remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        val name = sharedPreferences.getString("user_name", "") ?: ""
+        val email = sharedPreferences.getString("user_email", "") ?: ""
+        userName.value = name
+        userEmail.value = email
+    }
+
     // Search and filter states
     var searchQuery by remember { mutableStateOf("") }
     var showSearchDialog by remember { mutableStateOf(false) }
@@ -471,7 +481,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = currentUsername.take(1).uppercase(),
+                                text = userName.value.take(1).uppercase(),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
                                 color = Color.White
@@ -485,7 +495,7 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                                 color = Color.White.copy(alpha = 0.8f)
                             )
                             Text(
-                                text = currentUsername,
+                                text = userName.value,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -781,65 +791,70 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 20.dp, end = 20.dp, top = 48.dp, bottom = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        IconButton(
-                            onClick = { scope.launch { drawerState.open() } },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(
-                                    Color(0xFF4285F4).copy(alpha = 0.1f),
-                                    CircleShape
-                                )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = Color(0xFF4285F4)
-                            )
-                        }
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "Dashboard Conductor",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
-                            )
-                            AnimatedContent(
-                                targetState = district.value
-                            ) { districtText ->
-                                Text(
-                                    text = if (districtText.isNotEmpty()) "📍 $districtText" else "Obteniendo ubicación...",
-                                    fontSize = 12.sp,
-                                    color = if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF4285F4)
+                            IconButton(
+                                onClick = { scope.launch { drawerState.open() } },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        Color(0xFF4285F4).copy(alpha = 0.1f),
+                                        CircleShape
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Default.Menu,
+                                    contentDescription = "Menu",
+                                    tint = Color(0xFF4285F4)
                                 )
                             }
-                        }
 
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF4285F4))
-                                .clickable {
-                                    Toast.makeText(context, "Perfil de $currentUsername", Toast.LENGTH_SHORT).show()
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = currentUsername.take(1).uppercase(),
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "Dashboard Conductor",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
+                                )
+                                AnimatedContent(
+                                    targetState = district.value
+                                ) { districtText ->
+                                    Text(
+                                        text = if (districtText.isNotEmpty()) "📍 $districtText" else "Obteniendo ubicación...",
+                                        fontSize = 12.sp,
+                                        color = if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF4285F4)
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF4285F4))
+                                    .clickable {
+                                        Toast.makeText(context, "Perfil de ${userName.value}", Toast.LENGTH_SHORT).show()
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = userName.value.take(1).uppercase(),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }
@@ -1281,3 +1296,4 @@ fun DrawerMenuItem(
         }
     }
 }
+

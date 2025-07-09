@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "906326549437",
+    "project_id": "parkingnow-8be3b",
+    "storage_bucket": "parkingnow-8be3b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:906326549437:android:ad1ce2c351b7b5c0b7e8d4",
+        "android_client_info": {
+          "package_name": "pe.edu.upc.parkingnow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeTLT6EEOiUGltiBgaoD6lpDfAziRiBKE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

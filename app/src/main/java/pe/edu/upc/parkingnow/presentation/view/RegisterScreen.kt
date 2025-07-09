@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import kotlin.collections.set
 
 
@@ -87,6 +88,9 @@ fun RegisterScreen(
     val registerViewModel: RegisterViewModel = viewModel()
     val registerSuccess by registerViewModel.registerSuccess
     val registerError by registerViewModel.registerError
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("parkingnow_prefs", android.content.Context.MODE_PRIVATE)
 
     Box(
         modifier = Modifier
@@ -421,6 +425,17 @@ fun RegisterScreen(
 
                 LaunchedEffect(registerSuccess) {
                     if (registerSuccess != null) {
+                        // Guardar datos del usuario autenticado en SharedPreferences
+                        registerSuccess?.let { resp ->
+                            sharedPreferences.edit().apply {
+                                putString("access_token", resp.access_token)
+                                putString("user_name", resp.user.name)
+                                putString("user_email", resp.user.email)
+                                putString("user_tipo", resp.user.tipoUsuario)
+                                putInt("user_id", resp.user.id)
+                                apply()
+                            }
+                        }
                         userViewModel.setUsername(name)
                         navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
                         navController.navigate("dashboard") {
@@ -624,3 +639,4 @@ fun EnhancedPasswordField(
         keyboardActions = keyboardActions
     )
 }
+

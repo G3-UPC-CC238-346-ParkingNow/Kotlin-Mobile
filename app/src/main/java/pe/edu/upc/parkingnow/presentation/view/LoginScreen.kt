@@ -2,6 +2,8 @@ package pe.edu.upc.parkingnow.presentation.view
 
 import pe.edu.upc.parkingnow.R
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.LoginViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -41,6 +44,13 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
     var passwordVisible by remember { mutableStateOf(false) }
     val isDarkTheme by appViewModel.isDarkMode.collectAsState()
     val scrollState = rememberScrollState()
+
+    val loginViewModel: LoginViewModel = viewModel()
+    val loginSuccess by loginViewModel.loginSuccess
+    val loginError by loginViewModel.loginError
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("parkingnow_prefs", android.content.Context.MODE_PRIVATE)
 
     val backgroundColor = if (isDarkTheme)
         Color(0xFF121212)
@@ -304,10 +314,9 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
 
                     Button(
                         onClick = {
-                            navController.navigate(Routes.Dashboard.route) {
-                                popUpTo(Routes.Login.route) { inclusive = true }
+                            if (isFormValid) {
+                                loginViewModel.login(pe.edu.upc.parkingnow.data.model.LoginRequest(email, password))
                             }
-                            navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -337,6 +346,33 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                                 fontWeight = FontWeight.Bold
                             )
                         }
+                    }
+
+                    if (loginSuccess != null && loginSuccess?.access_token?.isNotBlank() == true) {
+                        // Guardar datos del usuario autenticado en SharedPreferences
+                        LaunchedEffect(loginSuccess) {
+                            loginSuccess?.let { resp ->
+                                sharedPreferences.edit().apply {
+                                    putString("access_token", resp.access_token)
+                                    putString("user_name", resp.user.name)
+                                    putString("user_email", resp.user.email)
+                                    putString("user_tipo", resp.user.tipoUsuario)
+                                    putInt("user_id", resp.user.id)
+                                    apply()
+                                }
+                            }
+                            navController.navigate(Routes.Dashboard.route) {
+                                popUpTo(Routes.Login.route) { inclusive = true }
+                            }
+                            navController.currentBackStackEntry?.savedStateHandle?.set("reset_terms", true)
+                        }
+                    }
+                    if (loginError != null) {
+                        Text(
+                            text = "Error al iniciar sesión: ${loginError ?: "Inténtalo de nuevo"}",
+                            color = Color.Red,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -478,3 +514,4 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
         }
     }
 }
+
