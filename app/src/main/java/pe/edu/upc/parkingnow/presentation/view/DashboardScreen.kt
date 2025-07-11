@@ -1,6 +1,6 @@
 package pe.edu.upc.parkingnow.presentation.view
 
-import pe.edu.upc.parkingnow.presentation.navigation.Routes
+import  pe.edu.upc.parkingnow.presentation.navigation.Routes
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -39,6 +39,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import pe.edu.upc.parkingnow.R
 import org.osmdroid.config.Configuration
 import org.osmdroid.views.MapView
@@ -65,6 +66,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
 import androidx.activity.compose.BackHandler
+import pe.edu.upc.parkingnow.data.repository.LocalRepositoryImpl
+import pe.edu.upc.parkingnow.presentation.viewmodel.ReservationViewModel
+import pe.edu.upc.parkingnow.domain.model.Local
+import kotlin.compareTo
+import kotlin.text.toInt
+import kotlin.times
 
 data class ParkingSpot(
     val id: String,
@@ -83,7 +90,7 @@ data class ParkingSpot(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, appViewModel: AppViewModel) {
+fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, appViewModel: AppViewModel, reservationViewModel: ReservationViewModel) {
     val currentUsername by userViewModel.username.collectAsState()
     val isDarkTheme = appViewModel.isDarkMode.collectAsState().value
     val context = LocalContext.current
@@ -106,8 +113,14 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
     LaunchedEffect(Unit) {
         val name = sharedPreferences.getString("user_name", "") ?: ""
         val email = sharedPreferences.getString("user_email", "") ?: ""
+        val token = sharedPreferences.getString("user_token", "") ?: ""
+        val placa = sharedPreferences.getString("user_placa", "") ?: ""
+
         userName.value = name
         userEmail.value = email
+
+        // Cargar datos del usuario en el ViewModel
+        userViewModel.loadUserData(token, name, email, placa)
     }
 
     // Search and filter states
@@ -137,66 +150,113 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
         // No hacer nada para bloquear el retroceso
     }
 
-    // Sample parking data
-    val parkingSpots = remember {
-        listOf(
-            ParkingSpot(
-                id = "1",
-                name = "Centro Comercial Jockey Plaza",
-                address = "Av. Javier Prado Este 4200, Santiago de Surco",
-                distance = "0.8 km",
-                price = "S/ 5.00/hora",
-                rating = 4.5f,
-                features = listOf("Techado", "Seguridad 24h", "Cámaras"),
-                availableSpots = 45,
-                totalSpots = 200,
-                isOpen24h = true,
-                latitude = -12.0864,
-                longitude = -76.9922
-            ),
-            ParkingSpot(
-                id = "2",
-                name = "Estacionamiento San Isidro",
-                address = "Av. Conquistadores 145, San Isidro",
-                distance = "1.2 km",
-                price = "S/ 8.00/hora",
-                rating = 4.8f,
-                features = listOf("Valet Parking", "Lavado", "Techado"),
-                availableSpots = 12,
-                totalSpots = 50,
-                isOpen24h = false,
-                latitude = -12.0931,
-                longitude = -77.0465
-            ),
-            ParkingSpot(
-                id = "3",
-                name = "Plaza Norte",
-                address = "Av. Túpac Amaru 899, Independencia",
-                distance = "2.1 km",
-                price = "S/ 3.50/hora",
-                rating = 4.2f,
-                features = listOf("Económico", "Seguridad"),
-                availableSpots = 78,
-                totalSpots = 150,
-                isOpen24h = true,
-                latitude = -11.9889,
-                longitude = -77.0611
-            )
-        )
+    var userLat by remember { mutableStateOf<Double?>(null) }
+    var userLng by remember { mutableStateOf<Double?>(null) }
+    var parkingSpots by remember { mutableStateOf<List<ParkingSpot>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
+
+    val reservationSuccess by reservationViewModel.reservationSuccess.collectAsState()
+    val reservationError by reservationViewModel.reservationError.collectAsState()
+
+    // Obtener ubicación exacta del usuario y cargar locales cercanos
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            try {
+                val location = fusedLocationClient.lastLocation.await()
+                val lat = location?.latitude ?: -12.104544984423494
+                val lng = location?.longitude ?: -76.96466964907471
+                userLat = lat
+                userLng = lng
+                val localRepository = LocalRepositoryImpl()
+                val locales = localRepository.getLocalesCercanos(lat, lng, 10000)
+                parkingSpots = locales.map { local ->
+                    val estLat = local.latitud?.toDoubleOrNull() ?: 0.0
+                    val estLng = local.longitud?.toDoubleOrNull() ?: 0.0
+                    val distance = if (userLat != null && userLng != null && estLat != 0.0 && estLng != 0.0) {
+                        val results = FloatArray(1)
+                        Location.distanceBetween(userLat!!, userLng!!, estLat, estLng, results)
+                        val km = results[0] / 1000.0
+                        String.format("%.2f km", km)
+                    } else "-"
+                    ParkingSpot(
+                        id = local.id.toString(),
+                        name = local.nombre,
+                        address = local.direccion,
+                        distance = distance,
+                        price = local.precio_por_hora?.let { "S/ $it/hora" } ?: "-",
+                        rating = local.rating?.toFloatOrNull() ?: 0.0f,
+                        features = buildList {
+                            local.caracteristicas?.let { addAll(it) }
+                            if (local.tiene_camaras == true) add("Cámaras de Seguridad")
+                            if (local.seguridad_24h == true) add("Seguridad 24h")
+                            if (local.techado == true) add("Techado")
+                        },
+                        availableSpots = local.espacios_disponibles ?: 0,
+                        totalSpots = local.plazas,
+                        isOpen24h = local.seguridad_24h == true,
+                        latitude = estLat,
+                        longitude = estLng
+                    )
+                }
+            } catch (e: Exception) {
+                // Si hay error, usar ubicación fija por defecto
+                userLat = -12.104544984423494
+                userLng = -76.96466964907471
+                val localRepository = LocalRepositoryImpl()
+                val locales = localRepository.getLocalesCercanos(userLat!!, userLng!!, 10000)
+                parkingSpots = locales.map { local ->
+                    val estLat = local.latitud?.toDoubleOrNull() ?: 0.0
+                    val estLng = local.longitud?.toDoubleOrNull() ?: 0.0
+                    val distance = if (userLat != null && userLng != null && estLat != 0.0 && estLng != 0.0) {
+                        val results = FloatArray(1)
+                        Location.distanceBetween(userLat!!, userLng!!, estLat, estLng, results)
+                        val km = results[0] / 1000.0
+                        String.format("%.2f km", km)
+                    } else "-"
+                    ParkingSpot(
+                        id = local.id.toString(),
+                        name = local.nombre,
+                        address = local.direccion,
+                        distance = distance,
+                        price = local.precio_por_hora?.let { "S/ $it/hora" } ?: "-",
+                        rating = local.rating?.toFloatOrNull() ?: 0.0f,
+                        features = buildList {
+                            local.caracteristicas?.let { addAll(it) }
+                            if (local.tiene_camaras == true) add("Cámaras de Seguridad")
+                            if (local.seguridad_24h == true) add("Seguridad 24h")
+                            if (local.techado == true) add("Techado")
+                        },
+                        availableSpots = local.espacios_disponibles ?: 0,
+                        totalSpots = local.plazas,
+                        isOpen24h = local.seguridad_24h == true,
+                        latitude = estLat,
+                        longitude = estLng
+                    )
+                }
+                errorMsg = "No se pudo obtener la ubicación, usando ubicación por defecto."
+            }
+            isLoading = false
+        }
     }
 
-    val filteredParkingSpots = remember(searchQuery, selectedFilter) {
-        parkingSpots.filter { spot ->
+    val filteredParkingSpots = remember(searchQuery, selectedFilter, parkingSpots) {
+        var spots = parkingSpots.filter { spot ->
             val matchesSearch = spot.name.contains(searchQuery, ignoreCase = true) ||
                     spot.address.contains(searchQuery, ignoreCase = true)
-            val matchesFilter = when (selectedFilter) {
-                "Más cercano" -> true // Would sort by distance
-                "Más barato" -> true // Would sort by price
-                "Mejor valorado" -> spot.rating >= 4.5f
-                "Disponible 24h" -> spot.isOpen24h
-                else -> true
+            matchesSearch
+        }
+        when (selectedFilter) {
+            "Más cercano" -> spots.sortedBy { spot ->
+                spot.distance.replace(" km", "").toDoubleOrNull() ?: Double.MAX_VALUE
             }
-            matchesSearch && matchesFilter
+            "Más barato" -> spots.sortedBy { spot ->
+                spot.price.replace("S/ ", "").replace("/hora", "").replace("/h", "").toDoubleOrNull() ?: Double.MAX_VALUE
+            }
+            "Mejor valorado" -> spots.filter { it.rating >= 4.5f }
+            "Disponible 24h" -> spots.filter { it.isOpen24h }
+            else -> spots
         }
     }
 
@@ -215,6 +275,15 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             )
+        }
+    }
+
+    LaunchedEffect(reservationSuccess, reservationError) {
+        reservationSuccess?.let { response ->
+            Toast.makeText(context, "Reserva creada exitosamente: ${response.codigo_reserva}", Toast.LENGTH_LONG).show()
+        }
+        reservationError?.let { error ->
+            Toast.makeText(context, "Error al crear la reserva: $error", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -426,12 +495,24 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
 
     // Reservation Dialog
     if (showReservationDialog && selectedParking != null) {
+        // Collect states outside the lambda to avoid @Composable context issues
+        val userToken by userViewModel.userToken.collectAsState()
+        val userPlaca by userViewModel.userPlaca.collectAsState()
+
         ReservationDialog(
             parking = selectedParking!!,
             isDarkTheme = isDarkTheme,
             onDismiss = { showReservationDialog = false },
-            onConfirm = { duration, vehicleType ->
+            onConfirm = { duration, vehicleType, startDateTime, placa ->
                 showReservationDialog = false
+                reservationViewModel.crearReserva(
+                    token = userToken,
+                    idLocal = selectedParking!!.id.toInt(),
+                    fhInicio = startDateTime,
+                    duracionHoras = duration.toDouble(),
+                    tipoVehiculo = vehicleType,
+                    placaVehiculo = placa
+                )
                 navController.navigate(Routes.Payment.route)
             }
         )
@@ -724,10 +805,53 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                             map.isHorizontalMapRepetitionEnabled = false
                             map.isVerticalMapRepetitionEnabled = false
 
+
+
                             val peruCenter = GeoPoint(-9.19, -75.0152)
                             map.controller.setZoom(6.5)
                             map.controller.setCenter(peruCenter)
 
+                            val overlay = MyLocationNewOverlay(GpsMyLocationProvider(ctx), map)
+                            overlay.enableMyLocation()
+                            overlay.isDrawAccuracyEnabled = true
+
+                            overlay.enableFollowLocation()
+
+
+                            map.overlays.add(overlay)
+
+                            parkingSpots.forEach { spot ->
+                                if (spot.latitude != 0.0 && spot.longitude != 0.0) {
+                                    val marker = org.osmdroid.views.overlay.Marker(map)
+                                    marker.position = org.osmdroid.util.GeoPoint(spot.latitude, spot.longitude)
+                                    marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
+                                    marker.title = spot.name
+                                    marker.subDescription = spot.address
+                                    map.overlays.add(marker)
+                                }
+                            }
+
+                            map.invalidate()
+
+                            val locationCallback = object : LocationCallback() {
+                                override fun onLocationResult(result: LocationResult) {
+                                    val location = result.lastLocation
+                                    if (location != null) {
+                                        val userLocation = GeoPoint(location.latitude, location.longitude)
+
+                                        map.controller.setZoom(18.0)
+                                        map.controller.setCenter(userLocation)
+
+                                        val geocoder = Geocoder(ctx, Locale.getDefault())
+                                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                                        if (!addresses.isNullOrEmpty()) {
+                                            district.value = addresses[0].locality ?: addresses[0].subAdminArea ?: ""
+                                            city.value = addresses[0].adminArea ?: ""
+                                            country.value = addresses[0].countryName ?: ""
+                                        }
+                                    }
+                                }
+                            }
                             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(ctx)
                             val locationRequest = LocationRequest.create().apply {
                                 interval = 5000
@@ -743,35 +867,6 @@ fun DashboardScreen(navController: NavController, userViewModel: UserViewModel, 
                                 .addOnFailureListener {
                                     Toast.makeText(ctx, "Activa tu GPS para obtener ubicación en tiempo real", Toast.LENGTH_LONG).show()
                                 }
-
-                            val locationCallback = object : LocationCallback() {
-                                override fun onLocationResult(result: LocationResult) {
-                                    val location = result.lastLocation
-                                    if (location != null) {
-                                        val userLocation = GeoPoint(location.latitude, location.longitude)
-
-                                        map.overlays.clear()
-
-                                        val overlay = MyLocationNewOverlay(GpsMyLocationProvider(ctx), map)
-                                        overlay.enableMyLocation()
-                                        overlay.isDrawAccuracyEnabled = true
-                                        overlay.enableFollowLocation()
-
-                                        map.overlays.add(overlay)
-
-                                        map.controller.setZoom(18.0)
-                                        map.controller.setCenter(userLocation)
-
-                                        val geocoder = Geocoder(ctx, Locale.getDefault())
-                                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                                        if (!addresses.isNullOrEmpty()) {
-                                            district.value = addresses[0].locality ?: addresses[0].subAdminArea ?: ""
-                                            city.value = addresses[0].adminArea ?: ""
-                                            country.value = addresses[0].countryName ?: ""
-                                        }
-                                    }
-                                }
-                            }
 
                             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, ctx.mainLooper)
                             map
@@ -1039,18 +1134,148 @@ fun ParkingCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReservationDialog(
     parking: ParkingSpot,
     isDarkTheme: Boolean,
     onDismiss: () -> Unit,
-    onConfirm: (duration: Int, vehicleType: String) -> Unit
+    onConfirm: (duration: Int, vehicleType: String, startDateTime: String, placa: String) -> Unit
 ) {
     var selectedDuration by remember { mutableStateOf(1) }
-    var selectedVehicle by remember { mutableStateOf("Automóvil") }
+    var selectedVehicle by remember { mutableStateOf("auto") }
+    var selectedDate by remember { mutableStateOf("") }
+    var selectedTime by remember { mutableStateOf("") }
+    var placaVehiculo by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
-    val vehicleTypes = listOf("Automóvil", "SUV", "Motocicleta", "Camioneta")
+    // Cargar placa del usuario desde SharedPreferences
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("parkingnow_prefs", android.content.Context.MODE_PRIVATE)
+
+    LaunchedEffect(Unit) {
+        val savedPlaca = sharedPreferences.getString("user_placa", "") ?: ""
+        placaVehiculo = savedPlaca
+    }
+
+    val pricePerHour = parking.price.replace("S/ ", "").replace("/hora", "").replace("/h", "").toDoubleOrNull() ?: 0.0
+    val totalPrice = selectedDuration * pricePerHour
+
+    val vehicleTypes = listOf("auto", "camioneta", "moto", "furgoneta", "bicicleta")
     val durations = listOf(1, 2, 3, 4, 6, 8, 12, 24)
+
+    // Initialize with current date and time using Calendar (Peru timezone)
+    val currentDateTime = remember {
+        val calendar = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("America/Lima"))
+        val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val timeFormat = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        selectedDate = dateFormat.format(calendar.time)
+        selectedTime = timeFormat.format(calendar.time)
+        calendar
+    }
+
+    // DatePicker State
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis()
+    )
+
+    // TimePicker State
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentDateTime.get(java.util.Calendar.HOUR_OF_DAY),
+        initialMinute = currentDateTime.get(java.util.Calendar.MINUTE)
+    )
+
+    // Function to format the datetime for the API (Peru timezone, sin Z)
+    fun formatDateTime(): String {
+        if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
+            try {
+                val dateParts = selectedDate.split("/")
+                val timeParts = selectedTime.split(":")
+
+                val day = dateParts[0].padStart(2, '0')
+                val month = dateParts[1].padStart(2, '0')
+                val year = dateParts[2]
+                val hour = timeParts[0].padStart(2, '0')
+                val minute = timeParts[1].padStart(2, '0')
+
+                // Crear Calendar con timezone Peru
+                val calendar = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("America/Lima"))
+                calendar.set(year.toInt(), month.toInt() - 1, day.toInt(), hour.toInt(), minute.toInt(), 0)
+                calendar.set(java.util.Calendar.MILLISECOND, 0)
+
+                // Formatear fecha sin zona horaria Z
+                val isoFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                isoFormat.timeZone = java.util.TimeZone.getTimeZone("America/Lima")
+                return isoFormat.format(calendar.time)
+            } catch (e: Exception) {
+                // Fallback to current time if parsing fails
+                val calendar = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("America/Lima"))
+                val isoFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                isoFormat.timeZone = java.util.TimeZone.getTimeZone("America/Lima")
+                return isoFormat.format(calendar.time)
+            }
+        }
+        val calendar = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("America/Lima"))
+        val isoFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        isoFormat.timeZone = java.util.TimeZone.getTimeZone("America/Lima")
+        return isoFormat.format(calendar.time)
+    }
+
+    // Date Picker Dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val calendar = java.util.Calendar.getInstance()
+                            calendar.timeInMillis = millis
+                            val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            selectedDate = dateFormat.format(calendar.time)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // Time Picker Dialog
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancelar")
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -1063,7 +1288,9 @@ fun ReservationDialog(
             )
         ) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Text(
                     text = "Reservar Estacionamiento",
@@ -1082,6 +1309,91 @@ fun ReservationDialog(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // Date Selection
+                Text(
+                    text = "Fecha y Hora de Inicio",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { showDatePicker = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF4285F4)
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = "Fecha",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(selectedDate.ifEmpty { "Fecha" }, fontSize = 12.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = { showTimePicker = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF4285F4)
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Schedule,
+                            contentDescription = "Hora",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(selectedTime.ifEmpty { "Hora" }, fontSize = 12.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Campo para la placa del vehículo
+                Text(
+                    text = "Placa del Vehículo",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = placaVehiculo,
+                    onValueChange = {
+                        placaVehiculo = it.uppercase()
+                        // Guardar la placa en SharedPreferences para futuras reservas
+                        sharedPreferences.edit().putString("user_placa", it.uppercase()).apply()
+                    },
+                    label = { Text("Ej: ABC-123") },
+                    placeholder = { Text("Ingresa la placa") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.DirectionsCar,
+                            contentDescription = "Placa",
+                            tint = Color(0xFF4285F4)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF4285F4),
+                        focusedLabelColor = Color(0xFF4285F4)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = "Tipo de Vehículo",
                     fontSize = 14.sp,
@@ -1097,7 +1409,14 @@ fun ReservationDialog(
                     items(vehicleTypes) { vehicle ->
                         FilterChip(
                             onClick = { selectedVehicle = vehicle },
-                            label = { Text(vehicle, fontSize = 12.sp) },
+                            label = {
+                                Text(
+                                    vehicle.replaceFirstChar {
+                                        if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                                    },
+                                    fontSize = 12.sp
+                                )
+                            },
                             selected = selectedVehicle == vehicle,
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = Color(0xFF4285F4),
@@ -1155,7 +1474,7 @@ fun ReservationDialog(
                             color = if (isDarkTheme) Color.White else Color(0xFF1E293B)
                         )
                         Text(
-                            text = "S/ ${(selectedDuration * 5.0).toInt()}.00",
+                            text = "S/ ${String.format(Locale.getDefault(), "%.2f", totalPrice)}",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF4285F4)
@@ -1180,11 +1499,15 @@ fun ReservationDialog(
                     }
 
                     Button(
-                        onClick = { onConfirm(selectedDuration, selectedVehicle) },
+                        onClick = {
+                            val formattedDateTime = formatDateTime()
+                            onConfirm(selectedDuration, selectedVehicle, formattedDateTime, placaVehiculo)
+                        },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF4285F4)
-                        )
+                        ),
+                        enabled = selectedDate.isNotEmpty() && selectedTime.isNotEmpty() && placaVehiculo.isNotEmpty()
                     ) {
                         Text("Confirmar", color = Color.White)
                     }
@@ -1250,7 +1573,7 @@ fun DrawerMenuItem(
     isSelected: Boolean = false,
     isDarkTheme: Boolean,
     onClick: () -> Unit
-) {
+)  {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1296,4 +1619,3 @@ fun DrawerMenuItem(
         }
     }
 }
-

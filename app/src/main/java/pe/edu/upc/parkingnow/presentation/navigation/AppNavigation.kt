@@ -1,8 +1,8 @@
 package pe.edu.upc.parkingnow.presentation.navigation
 
-
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.ReservationViewModel
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -24,7 +24,12 @@ import pe.edu.upc.parkingnow.presentation.view.NotificationsScreen
 import pe.edu.upc.parkingnow.presentation.view.SuccessScreen
 
 @Composable
-fun AppNavigation(navController: NavHostController, userViewModel: UserViewModel, appViewModel: AppViewModel) {
+fun AppNavigation(
+    navController: NavHostController,
+    userViewModel: UserViewModel,
+    appViewModel: AppViewModel,
+    reservationViewModel: ReservationViewModel
+) {
     NavHost(
         navController = navController,
         startDestination = Routes.Welcome.route
@@ -45,7 +50,12 @@ fun AppNavigation(navController: NavHostController, userViewModel: UserViewModel
             ChangePasswordScreen(navController = navController, appViewModel = appViewModel)
         }
         composable(Routes.Dashboard.route) {
-            DashboardScreen(navController = navController, userViewModel = userViewModel, appViewModel = appViewModel)
+            DashboardScreen(
+                navController = navController,
+                userViewModel = userViewModel,
+                appViewModel = appViewModel,
+                reservationViewModel = reservationViewModel
+            )
         }
         composable(Routes.Bookings.route) {
             BookingsScreen(navController = navController, appViewModel = appViewModel)
@@ -73,3 +83,4 @@ fun AppNavigation(navController: NavHostController, userViewModel: UserViewModel
         }
     }
 }
+

@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.edu.upc.parkingnow.presentation.navigation.AppNavigation
 import pe.edu.upc.parkingnow.presentation.viewmodel.UserViewModel
 import pe.edu.upc.parkingnow.presentation.viewmodel.AppViewModel
+import pe.edu.upc.parkingnow.presentation.viewmodel.ReservationViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import pe.edu.upc.parkingnow.ui.theme.ParkingNowTheme
@@ -25,8 +26,15 @@ class MainActivity : ComponentActivity() {
             ParkingNowTheme(isDarkModeEnabled = isDarkModeEnabled) {
                 val navController = rememberNavController()
                 val userViewModel: UserViewModel = viewModel()
-                AppNavigation(navController = navController, userViewModel = userViewModel, appViewModel = appViewModel)
+                val reservationViewModel: ReservationViewModel = viewModel()
+                AppNavigation(
+                    navController = navController,
+                    userViewModel = userViewModel,
+                    appViewModel = appViewModel,
+                    reservationViewModel = reservationViewModel
+                )
             }
         }
     }
 }
+

@@ -353,7 +353,7 @@ fun LoginScreen(navController: NavController, appViewModel: AppViewModel) {
                         LaunchedEffect(loginSuccess) {
                             loginSuccess?.let { resp ->
                                 sharedPreferences.edit().apply {
-                                    putString("access_token", resp.access_token)
+                                    putString("user_token", resp.access_token)  // ← Cambiado de "access_token" a "user_token"
                                     putString("user_name", resp.user.name)
                                     putString("user_email", resp.user.email)
                                     putString("user_tipo", resp.user.tipoUsuario)
