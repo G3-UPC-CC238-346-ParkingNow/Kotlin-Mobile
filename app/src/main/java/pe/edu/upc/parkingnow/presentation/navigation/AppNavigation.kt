@@ -58,7 +58,11 @@ fun AppNavigation(
             )
         }
         composable(Routes.Bookings.route) {
-            BookingsScreen(navController = navController, appViewModel = appViewModel)
+            BookingsScreen(
+                navController = navController,
+                appViewModel = appViewModel,
+                reservationViewModel = reservationViewModel
+            )
         }
         composable(Routes.Ticket.route) {
             TicketScreen(navController = navController, appViewModel = appViewModel)
